@@ -1,0 +1,175 @@
+[flake8]
+max-complexity = 6
+inline-quotes = double
+max-line-length = 88
+docstring_style = sphinx
+max-base-classes = 4
+max-local-variables = 7
+
+ignore =
+    ; Do not perform function calls in argument defaults (for dependency injection)
+    B008,
+    ; Missing docstring in public module
+    D100,
+    ; Missing docstring in public class
+    D101,
+    ; Empty description: e (2, 2)
+    DAR002,
+    ; Missing parameter(s) in docstring
+    DAR101,
+    ; Excess "Returns" in Docstring: + return
+    DAR202,
+    ; Missing docstring in __init__
+    D107,
+    ; Inline substitution_reference start-string without end-string
+    RST219,
+    ; Line break before binary operator
+    W503,
+    ; Found wrong module name
+    WPS100,
+    ; Found wrong variable name
+    WPS110,
+    ; Found module with too many imports
+    WPS201,
+    ; Found too many module members
+    WPS202,
+    ; Found overused expression
+    WPS204,
+    ; Found too many arguments
+    WPS211,
+    ; Found too many methods
+    WPS214,
+    ; Found string literal over-use
+    WPS226,
+    ; Found a too complex `f` string
+    WPS237,
+    ; Found `f` string
+    WPS305,
+    ; Found class without a base class
+    WPS306,
+    ; Found `%` string formatting
+    WPS323,
+    ; Found a line that starts with a dot
+    WPS348,
+    ; Missing exception(s) in raises section
+    DAR401,
+    ; Found complex default value (for dependency injection)
+    WPS404,
+    ; Found mutable module constant.
+    WPS407,
+    ; Found wrong keyword: pass
+    WPS420,
+    ; Found nested function:
+    WPS430,
+    ; Found incorrect node inside `class` body
+    WPS604,
+    ; Found unpythonic getter or setter
+    WPS615,
+
+per-file-ignores =
+    ; init files
+    __init__.py:
+        ; Ignore not used imports
+        F401,
+        ; Ignore logic in init files
+        WPS412,
+
+    ; models
+    *database/models/*:
+        ; Undefined name
+        F821,
+        ; Ignore logic in init files
+        WPS412,
+        ; Found magic number
+        WPS432,
+
+    ; schemas
+    *api/schemas/*:
+        ; Found magic number
+        WPS432,
+
+    ; query managers
+    *database/query_managers/*:
+        ; imported but unused
+        F401,
+        ; Found line with high Jones Complexity
+        WPS221,
+        ; Found `__init__.py` module with logic
+        WPS412,
+
+    ; migrations
+    *database/migrations/*:
+        ; Missing docstring in public function
+        D103,
+        ; Line too long
+        E501,
+        ; Module imported but unsused
+        F401,
+        ; Possible hardcoded password
+        S105,
+        ; Standard pseudo-random generators are not suitable for security/cryptographic purposes
+        S311,
+        ; Found incorrect module name pattern
+        WPS102,
+        ; Found too short name
+        WPS111,
+        ; Found too long name
+        WPS118,
+        ; Found too many local variables
+        WPS210,
+        ; Found line with high Jones Complexity
+        WPS221,
+        ; Found overly complex annotation
+        WPS234,
+        ; Trailing whitespace
+        W291,
+        ;  Found underscored number
+        WPS303,
+        ; Found `__init__.py` module with logic
+        WPS412,
+        ; Found magic number
+        WPS432,
+        ; Found outer scope names shadowing: context
+        WPS442,
+        ; Wrong multiline string usage
+        WPS462,
+
+    ; tests
+    *src/tests/*:
+        ; Missing docstring in public function
+        D103,
+        ; Use of assert detected
+        S101,
+        ; Found too long name
+        WPS118,
+        ; Found too many `assert` statements
+        WPS218,
+        ; Found too many local variables
+        WPS210,
+        ; Found too long `try`
+        WPS229,
+        ; Found incorrect multi-line parameters
+        WPS317,
+        ; Found explicit string concatenation
+        WPS336,
+        ; Found magic number
+        WPS432,
+        ; Found protected attribute usage
+        WPS437,
+        ; Found outer scope names shadowing: context
+        WPS442,
+
+exclude =
+  ./.cache,
+  ./.git,
+  ./.idea,
+  ./.mypy_cache,
+  ./.pytest_cache,
+  ./.venv,
+  ./venv,
+  ./env,
+  ./cached_venv,
+  ./docs,
+  ./deploy,
+  ./var,
+  ./.vscode,
