@@ -179,6 +179,14 @@ class BaseDAL(ABC):  # noqa: WPS338
         query = self._qm.total_count(model)
         return await self._scalar(query)
 
+    async def commit(self) -> None:
+        """
+        Commit changes to database.
+
+        :return:
+        """
+        await self._db_session.commit()
+
     async def _execute(self, query: Executable):
         """
         Execute SQL query..

@@ -1,4 +1,9 @@
 pytest_plugins = [
-    "fixtures.core_fixtures",
-    "fixtures.dal_fixtures",
+    "fixtures.core",
+    "fixtures.constants",
+    "fixtures.raw_data",
+    "fixtures.dals",
+    "fixtures.query_managers",
+    "fixtures.models",
+    "fixtures.database_entities",
 ]

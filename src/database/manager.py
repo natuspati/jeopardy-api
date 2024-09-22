@@ -24,7 +24,6 @@ class DatabaseConnectionManager:
         db_echo: bool = False,
         db_echo_pool: bool = False,
         db_isolation_level: ISOLATION_LEVEL_TYPE = "READ COMMITTED",
-        db_autocommit: bool = False,
         db_expire_on_commit: bool = False,
         rollback: bool = False,
     ):
@@ -36,7 +35,6 @@ class DatabaseConnectionManager:
         )
         self._sessionmaker = async_sessionmaker(
             bind=self._engine,
-            autocommit=db_autocommit,
             expire_on_commit=db_expire_on_commit,
         )
         self._rollback = rollback
@@ -67,9 +65,13 @@ class DatabaseConnectionManager:
         async with self._engine.begin() as connection:
             try:
                 yield connection
-            except Exception:
+            except Exception as error:
+                logger.exception(
+                    "An exception was raised during connection",
+                    exc_info=error,
+                )
                 await connection.rollback()
-                raise
+                raise error
             else:
                 if self._rollback:
                     await connection.rollback()
@@ -87,21 +89,19 @@ class DatabaseConnectionManager:
         if self._sessionmaker is None:
             raise DatabaseSessionManagerNotInitializedError()
 
-        session = self._sessionmaker()
-        try:
-            yield session
-        except Exception as error:
-            logger.exception("An exception was raised during session:", exc_info=error)
-            if session:
+        async with self._sessionmaker() as session, session.begin():  # noqa: WPS316
+            try:
+                yield session
+            except Exception as error:
+                logger.exception(
+                    "An exception was raised during session",
+                    exc_info=error,
+                )
                 await session.rollback()
-            raise error
-        else:
-            if session and self._rollback:
-                await session.rollback()
-        finally:
-            if session:
-                await session.commit()
-                await session.close()
+                raise error
+            else:
+                if self._rollback:
+                    await session.rollback()
 
 
 def create_database_connection_manager(
@@ -109,7 +109,6 @@ def create_database_connection_manager(
     db_echo: bool | None = None,
     db_echo_pool: bool | None = None,
     db_isolation_level: ISOLATION_LEVEL_TYPE | None = None,
-    db_autocommit: bool | None = None,
     db_expire_on_commit: bool | None = None,
     rollback: bool = False,
 ) -> DatabaseConnectionManager:
@@ -124,9 +123,8 @@ def create_database_connection_manager(
     :param db_echo: if True, the engine will log all statements
     :param db_echo_pool: if True, the connection pool will log all checkouts/checkins
     :param db_isolation_level: isolation level for database transactions
-    :param db_autocommit: if True, each statement is automatically committed
     :param db_expire_on_commit: if True, all instances will be expired after each commit
-    :param rollback: if True, all transactions will be rolled back before commit
+    :param rollback: if True, all changes are be rolled back in connection or session
     :return: configured instance of DatabaseSessionManager
     """
     return DatabaseConnectionManager(
@@ -134,7 +132,6 @@ def create_database_connection_manager(
         db_echo=db_echo or settings.db_echo,
         db_echo_pool=db_echo_pool or settings.db_echo_pool,
         db_isolation_level=db_isolation_level or settings.db_isolation_level,
-        db_autocommit=db_autocommit or settings.db_autocommit,
         db_expire_on_commit=db_expire_on_commit or settings.db_expire_on_commit,
         rollback=rollback,
     )

@@ -72,7 +72,6 @@ class Settings(BaseSettings):
     db_echo: bool = False
     db_echo_pool: bool = False
     db_isolation_level: ISOLATION_LEVEL_TYPE = "READ COMMITTED"
-    db_autocommit: bool = False
     db_expire_on_commit: bool = False
 
     # Redis
@@ -128,8 +127,9 @@ settings = Settings()
 
 class LoggingSettings(BaseSettings):
     log_formatting: str = (
-        f"%(levelname)s: [{settings.service_name}] %(asctime)s | %(message)s"
+        f"%(levelname)s: [{settings.service_name}] %(asctime)s | %(name)s\n%(message)s"
     )
+    date_formatting: str = "%Y-%m-%d %H:%M:%S"
 
     @property
     def log_level(self) -> LogLevel:
@@ -143,6 +143,8 @@ class LoggingSettings(BaseSettings):
                 level = LogLevel.info
             case AppEnvironmentEnum.prod:
                 level = LogLevel.warning
+            case AppEnvironmentEnum.test:
+                level = LogLevel.info
             case _:
                 level = LogLevel.debug
         return level

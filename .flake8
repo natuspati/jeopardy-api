@@ -138,8 +138,14 @@ per-file-ignores =
     *src/tests/*:
         ; Missing docstring in public function
         D103,
+        ; line too long
+        E501,
         ; Use of assert detected
         S101,
+        ; Standard pseudo-random generators are not suitable for security/cryptographic purposes
+        S311,
+        ; Possible SQL injection vector through string-based query construction
+        S608,
         ; Found too long name
         WPS118,
         ; Found too many `assert` statements
@@ -148,8 +154,12 @@ per-file-ignores =
         WPS210,
         ; Found too long `try`
         WPS229,
+        ; Found too many variables used to unpack a tuple
+        WPS236,
         ; Found incorrect multi-line parameters
         WPS317,
+        ; Found extra indentation
+        WPS318,
         ; Found explicit string concatenation
         WPS336,
         ; Found magic number

@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
+from api.authnetication import hash_password
 from api.schemas.base import (
     BaseSchema,
     CreatedAtSchemaMixin,
@@ -17,7 +18,18 @@ class BaseUserSchema(BaseSchema):
 
 
 class UserCreateSchema(BaseUserSchema):
-    pass
+    password: str = Field(max_length=100)
+
+    @field_validator("password", mode="after")
+    @classmethod
+    def hash_password(cls, plain_password: str) -> str:
+        """
+        Hash plain password.
+
+        :param plain_password: plain password
+        :return: hashed password
+        """
+        return hash_password(plain_password)
 
 
 class UserUpdateSchema(BaseUserSchema, OneFieldSetSchemaMixin):

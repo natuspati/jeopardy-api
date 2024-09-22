@@ -12,9 +12,9 @@ class LobbyDAL(BaseDAL):
     async def get_lobbies(
         self,
         limit: int,
-        offset: int,
-        start_date: datetime | None,
-        end_date: datetime | None,
+        offset: int | None = 0,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         order: OrderQueryEnum = OrderQueryEnum.desc,
     ) -> list[LobbyModel]:
         """

@@ -5,6 +5,7 @@ from sqlalchemy import (  # noqa: WPS235
     BinaryExpression,
     ColumnElement,
     Delete,
+    Dialect,
     Insert,
     Label,
     Select,
@@ -15,8 +16,10 @@ from sqlalchemy import (  # noqa: WPS235
     func,
     insert,
     select,
+    text,
     update,
 )
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import InstrumentedAttribute, selectinload
 from sqlalchemy.sql.dml import ReturningDelete, ReturningInsert, ReturningUpdate
 
@@ -28,6 +31,7 @@ from exceptions.module.query_manager import (
     InvalidInClauseError,
     UnsupportedWhereClauseError,
 )
+from settings import settings
 
 
 class BaseQueryManager(ABC):
@@ -56,7 +60,7 @@ class BaseQueryManager(ABC):
     def select(  # noqa: C901
         cls,
         model: type[BaseDBModel] | None = None,
-        columns: list[Any] | None = None,
+        columns: list[str] | None = None,
         where: dict[str, Any] | None = None,
         order: dict[str, str] | None = None,
         limit: int | None = None,
@@ -85,7 +89,11 @@ class BaseQueryManager(ABC):
         """
         model = model or cls._model
 
-        query = select(*columns) if columns else select(model)
+        if columns:
+            columns = [text(column) for column in columns]
+            query = select(*columns)
+        else:
+            query = select(model)
 
         if distinct:
             query = cls.distinct(query)
@@ -195,6 +203,25 @@ class BaseQueryManager(ABC):
         """
         model = model or cls._model
         return select(func.count()).select_from(model)
+
+    @classmethod
+    def convert_query_to_string(
+        cls,
+        query: Select | Insert | Update | Delete,
+        slq_dialect: Dialect = postgresql.dialect(),
+    ) -> str:
+        """
+        Compile query with bound parameters.
+
+        :param query: SQLAlchemy query
+        :param slq_dialect: sql dialect
+        :return: compiled query
+        """
+        compiled_query = query.compile(
+            compile_kwargs={"literal_binds": True},
+            dialect=slq_dialect,
+        )
+        return compiled_query.string
 
     @classmethod
     def where(

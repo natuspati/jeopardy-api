@@ -15,8 +15,8 @@ class PlayerModel(BaseDBModelWithID):
         default=PlayerStateEnum.waiting,
         nullable=False,
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    lobby_id: Mapped[int] = mapped_column(ForeignKey("lobby.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+    lobby_id: Mapped[int] = mapped_column(ForeignKey("lobby.id"), nullable=False)
 
     user: Mapped["UserModel"] = relationship(
         "UserModel",

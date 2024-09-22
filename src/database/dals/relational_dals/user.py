@@ -7,7 +7,7 @@ from database.query_managers import UserQueryManager
 class UserDAL(BaseDAL):
     _qm = UserQueryManager
 
-    async def get_users(self, limit: int, offset: int) -> list[UserModel]:
+    async def get_users(self, limit: int, offset: int | None = 0) -> list[UserModel]:
         """
         Get active users.
 
@@ -70,11 +70,11 @@ class UserDAL(BaseDAL):
         """
         return await self.update(where={"id": user_id}, **user_update.model_dump())
 
-    async def disable_user(self, user_id: int) -> None:
+    async def disable_user(self, user_id: int) -> UserModel:
         """
         Disable user by id.
 
         :param user_id: user id
-        :return:
+        :return: disabled user
         """
-        await self.update(where={"id": user_id}, is_active=False)
+        return await self.update(where={"id": user_id}, is_active=False)

@@ -22,6 +22,7 @@ class UserModel(BaseDBModelWithID):
     )
     modified_at: Mapped[datetime] = mapped_column(
         DateTime,
+        default=datetime.now,
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False,

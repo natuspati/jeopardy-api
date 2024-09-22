@@ -11,6 +11,7 @@ from settings import logging_settings, settings
 logging.basicConfig(
     level=logging_settings.log_level.value,
     format=logging_settings.log_formatting,
+    datefmt=logging_settings.date_formatting,
 )
 
 logger = logging.getLogger(__name__)

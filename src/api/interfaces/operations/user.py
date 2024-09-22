@@ -112,7 +112,7 @@ class UserOperationsInterface:
         :param user_id: user id
         :return:
         """
-        return await self._users_service.disable_user(user_id)
+        await self._users_service.disable_user(user_id)
 
     @classmethod
     def _create_access_token(cls, user: UserInDBSchema) -> TokenSchema:

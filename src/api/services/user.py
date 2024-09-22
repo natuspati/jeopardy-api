@@ -77,14 +77,15 @@ class UserService(DBModelValidatorMixin):
         )
         return self.validate(updated_user, UserInDBSchema)
 
-    async def disable_user(self, user_id: int) -> None:
+    async def disable_user(self, user_id: int) -> UserInDBSchema:
         """
         Change user status to inactive.
 
         :param user_id: user id
         :return:
         """
-        return await self._user_dal.disable_user(user_id)
+        disabled_user = await self._user_dal.disable_user(user_id)
+        return self.validate(disabled_user, UserInDBSchema)
 
     async def total_count(self) -> int:
         """
