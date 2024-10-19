@@ -22,7 +22,7 @@ async def test_get_lobby_by_id(
     lobby_dal: LobbyDAL,
 ):
     players_in_lobby = choose_from_list(players)
-    player_in_lobby: PlayerModel = choose_from_list(players_in_lobby)
+    player_in_lobby = choose_from_list(players_in_lobby)
     selected_lobby = lobbies[player_in_lobby.lobby_id - 1]
 
     fetched_lobby = await lobby_dal.get_lobby_by_id(selected_lobby.id)

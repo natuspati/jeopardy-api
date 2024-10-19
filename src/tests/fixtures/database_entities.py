@@ -1,9 +1,25 @@
 import pytest
+from factories.user import UserFactory
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.authnetication import hash_password
 from database.models.lobby import LobbyModel
 from database.models.player import PlayerModel
 from database.models.user import UserModel
+
+
+@pytest.fixture
+async def active_user(password: str, db_session: AsyncSession) -> UserModel:
+    user = UserFactory.build(password=hash_password(password), is_active=True)
+    db_session.add(user)
+    return user
+
+
+@pytest.fixture
+async def inactive_user(password: str, db_session: AsyncSession) -> UserModel:
+    user = UserFactory.build(password=hash_password(password), is_active=False)
+    db_session.add(user)
+    return user
 
 
 @pytest.fixture

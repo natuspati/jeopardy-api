@@ -6,7 +6,7 @@ from pydantic_core.core_schema import ValidationInfo
 
 from api.enums import OrderQueryEnum
 from api.schemas.base import BaseSchema
-from exceptions.module.schema import SchemaInputError
+from exceptions.service.request import DateTimeQueryParamsError, OrderQueryParamsError
 
 
 class PaginationSchema(BaseSchema):
@@ -48,7 +48,7 @@ class DateTimeSchema(BaseSchema):
         """
         if self.start and self.end:
             if self.start >= self.end:
-                raise SchemaInputError()
+                raise DateTimeQueryParamsError()
         return self
 
 
@@ -73,4 +73,4 @@ class OrderSchema(BaseSchema):
         try:
             return OrderQueryEnum(order_value)
         except ValueError:
-            raise SchemaInputError()
+            raise OrderQueryParamsError()

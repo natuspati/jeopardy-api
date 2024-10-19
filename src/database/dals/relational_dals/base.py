@@ -17,10 +17,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.context_variables import is_concurrent
 from database.base_model import BaseDBModel
 from database.dependencies import get_db_manager, get_db_session
-from database.manager import DatabaseConnectionManager
-from database.manager import db_manager as default_db_manager
+from database.manager import DatabaseConnectionManager, default_db_manager
 from database.query_managers.base import BaseQueryManager
-from exceptions.module.database import DatabaseDetailError
+from exceptions.service.database import DatabaseDetailError
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +199,7 @@ class BaseDAL(ABC):  # noqa: WPS338
             try:
                 async with self._db_manager.session() as session:
                     result = await session.execute(query)
+                    session.expunge_all()
             except common_db_exceptions as error:
                 self._handle_error(error, str(error))
             else:
@@ -227,6 +227,7 @@ class BaseDAL(ABC):  # noqa: WPS338
             try:
                 async with self._db_manager.session() as session:
                     result = await session.scalar(query)
+                    session.expunge_all()
             except common_db_exceptions as error:
                 self._handle_error(error, str(query))
             else:
@@ -254,10 +255,12 @@ class BaseDAL(ABC):  # noqa: WPS338
             try:
                 async with self._db_manager.session() as session:
                     scalar_result = await session.scalars(query)
+                    realized_result = scalar_result.all()
+                    session.expunge_all()
             except common_db_exceptions as error:
                 self._handle_error(error, str(query))
             else:
-                return scalar_result.all()
+                return realized_result
         else:
             try:
                 scalar_result = await self._db_session.scalars(query)

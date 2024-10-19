@@ -3,7 +3,7 @@ from fastapi import Request
 from api.schemas.base import BaseSchema
 from api.schemas.pagination import PaginatedResultsSchema
 from api.schemas.query import PaginationSchema
-from exceptions.module.pagination import PaginationServiceNotConfiguredError
+from exceptions.service.pagination import PaginationServiceNotConfiguredError
 
 
 class PaginationService:

@@ -5,8 +5,8 @@ from typing import Literal
 import click
 
 from database.migrations.data.run import run_data_migrations
-from exceptions.module.cli import InvalidCLIArgumentsError
-from exceptions.module.database import DatabaseDetailError
+from exceptions.service.cli import InvalidCLIArgumentsError
+from exceptions.service.database import DatabaseDetailError
 
 logger = logging.getLogger(__name__)
 

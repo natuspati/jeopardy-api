@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from cutom_types.database import ISOLATION_LEVEL_TYPE
-from exceptions.module.database import DatabaseSessionManagerNotInitializedError
+from exceptions.service.database import DatabaseSessionManagerNotInitializedError
 from settings import settings
 
 logger = logging.getLogger(__name__)
@@ -137,4 +137,4 @@ def create_database_connection_manager(
     )
 
 
-db_manager = create_database_connection_manager()
+default_db_manager = create_database_connection_manager()

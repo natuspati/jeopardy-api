@@ -18,6 +18,6 @@ class PlayerWithLobbyUserInDBSchema(PlayerInDBSchema):
     user: UserInDBSchema
 
 
-class PlayerWithLobbyUseShowSchema(PlayerShowSchema):
+class PlayerWithLobbyUserShowSchema(PlayerShowSchema):
     lobby: LobbyShowSchema
     user: UserShowSchema

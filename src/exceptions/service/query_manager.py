@@ -1,9 +1,9 @@
 from typing import Any
 
-from exceptions.module.database import DatabaseError
+from exceptions.service.base import BaseServiceError
 
 
-class QueryManagerError(DatabaseError):
+class QueryManagerError(BaseServiceError):
     detail = "Query manager module error"
 
 

@@ -3,22 +3,23 @@ from typing import Annotated
 from fastapi import Depends
 
 from api.enums import PlayerStateEnum
-from api.schemas.lobby import PaginatedLobbiesSchema
+from api.schemas.lobby import LobbyPlayerCreateSchema, PaginatedLobbiesSchema
 from api.schemas.nested.player import (
     LobbyWithPlayersInDBSchema,
     PlayerWithLobbyUserInDBSchema,
 )
-from api.schemas.player import PlayerInDBSchema
+from api.schemas.player import LobbyPlayerAddSchema, PlayerInDBSchema
 from api.schemas.query import DateTimeSchema, OrderSchema, PaginationSchema
 from api.services import LobbyService, PlayerService
 from api.services.pagination import PaginationService
 from api.utilities import run_concurrently
-from exceptions.http.authorization import (
-    BannedPlayerStatusApiError,
-    InsufficientPlayerStatusApiError,
+from exceptions.service.authorization import (
+    BannedPlayerStatusError,
+    InsufficientPlayerStatusError,
 )
-from exceptions.http.lobby import PlayerLobbyDoesNotMatchApiError
-from exceptions.http.not_found import NotFoundApiError
+from exceptions.service.lobby import PlayerLobbyDoesNotMatchError
+from exceptions.service.not_found import NotFoundError
+from exceptions.service.resource import PlayerExistsError
 
 
 class LobbyOperationsInterface:
@@ -72,8 +73,31 @@ class LobbyOperationsInterface:
         """
         lobby = await self._lobby_service.get_lobby_by_id(lobby_id)
         if not lobby:
-            raise NotFoundApiError()
+            raise NotFoundError()
         return lobby
+
+    async def create_lobby(
+        self,
+        user_id: int,
+        lobby_player_create: LobbyPlayerCreateSchema,
+    ) -> LobbyWithPlayersInDBSchema:
+        """
+        Create lobby and lead player.
+
+        :param user_id: user that leads created lobby
+        :param lobby_player_create: lobby and player create data
+        :return: create lobby with lead player
+        """
+        lobby = await self._lobby_service.create_lobby(
+            name=lobby_player_create.lobby_name,
+        )
+        await self._player_service.create_player(
+            name=lobby_player_create.player_name,
+            state=PlayerStateEnum.lead,
+            lobby_id=lobby.id,
+            user_id=user_id,
+        )
+        return await self.get_lobby(lobby_id=lobby.id)
 
     async def get_player(
         self,
@@ -88,38 +112,84 @@ class LobbyOperationsInterface:
         :return: player with user and lobby data
         """
         player = await self._player_service.get_player_by_id(player_id)
-        self._check_player_in_lobby(lobby_id=lobby_id, player=player)
+        if not player:
+            raise NotFoundError()
+        await self._check_player_in_lobby(lobby_id=lobby_id, player=player)
         return player
+
+    async def create_waiting_player(
+        self,
+        lobby_id: int,
+        user_id: int,
+        lobby_player_add: LobbyPlayerAddSchema,
+    ) -> PlayerInDBSchema:
+        """
+        Add player with waiting state to a lobby.
+
+        If player already exists and/or banned, raise error.
+
+        :param lobby_id: lobby id
+        :param user_id: user to add to the lobby
+        :param lobby_player_add: player create data
+        :return: created player
+        """
+        existing_player = await self._player_service.get_player_by_user_lobby(
+            user_id=user_id,
+            lobby_id=lobby_id,
+        )
+        if existing_player:
+            await self._check_player_is_banned(existing_player)
+            raise PlayerExistsError()
+
+        return await self._player_service.create_player(
+            name=lobby_player_add.name,
+            state=PlayerStateEnum.waiting,
+            lobby_id=lobby_id,
+            user_id=user_id,
+        )
 
     async def ban_player(
         self,
         lobby_id: int,
-        lead_player: PlayerInDBSchema,
+        lead_player_id: int,
         player_id: int,
     ) -> PlayerInDBSchema:
         """
         Change player state to `banned`.
 
         :param lobby_id: lobby id
-        :param lead_player: player with `lead` start in a lobby
+        :param lead_player_id: player id with `lead` state in the lobby
         :param player_id: player id to ban
         :return: updated player
         """
-        self._check_player_in_lobby(lobby_id=lobby_id, player=lead_player)
-        self._check_player_is_lead(lead_player)
+        await self._check_player_in_lobby(lobby_id=lobby_id, player=player_id)
+        await self._check_player_is_lead(lead_player_id)
         return await self._player_service.ban_player_by_id(player_id)
 
-    @classmethod
-    def _check_player_in_lobby(cls, lobby_id: int, player: PlayerInDBSchema) -> None:
+    async def _check_player_in_lobby(
+        self,
+        lobby_id: int,
+        player: PlayerInDBSchema | int,
+    ) -> None:
+        if isinstance(player, int):
+            player = await self._player_service.get_player_by_id(player)
         if player.lobby_id != lobby_id:
-            raise PlayerLobbyDoesNotMatchApiError()
+            raise PlayerLobbyDoesNotMatchError()
 
-    @classmethod
-    def _check_player_is_lead(cls, player: PlayerInDBSchema) -> None:
+    async def _check_player_is_lead(
+        self,
+        player: PlayerInDBSchema | int,
+    ) -> None:
+        if isinstance(player, int):
+            player = await self._player_service.get_player_by_id(player)
         if player.state is not PlayerStateEnum.lead:
-            raise InsufficientPlayerStatusApiError()
+            raise InsufficientPlayerStatusError()
 
-    @classmethod
-    def _check_player_is_banned(cls, player: PlayerInDBSchema) -> None:
+    async def _check_player_is_banned(
+        self,
+        player: PlayerInDBSchema | int,
+    ) -> None:
+        if isinstance(player, int):
+            player = await self._player_service.get_player_by_id(player)
         if player.state is PlayerStateEnum.banned:
-            raise BannedPlayerStatusApiError()
+            raise BannedPlayerStatusError()

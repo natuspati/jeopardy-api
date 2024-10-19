@@ -2,12 +2,12 @@ from abc import ABC
 
 from fastapi import HTTPException, status
 
-from exceptions.module.base import BaseModuleError
+from exceptions.service.base import BaseServiceError
 
 
 class BaseHTTPError(HTTPException, ABC):
-    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     detail = "Description unavailable"
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
     def __init__(
         self,
@@ -20,21 +20,14 @@ class BaseHTTPError(HTTPException, ABC):
         )
 
 
-class BaseApiError(BaseHTTPError):
-    pass
+class HTTPError(BaseHTTPError):
+    def __init__(self, service_error: BaseServiceError):
+        super().__init__(
+            detail=service_error.detail,
+            status_code=service_error.status_code,
+        )
 
 
-class InternalApiError(BaseApiError):
-    detail = "Internal server error"
-
-
-class DetailedInternalApiError(InternalApiError):
-    def __init__(self, module_error: BaseModuleError):
-        detail = f"Internal server error: {module_error.detail}"
-        super().__init__(detail)
-
-
-class DetailedUncaughtApiError(BaseApiError):
+class InternalHTTPError(BaseHTTPError):
     def __init__(self, error: Exception):
-        detail = f"Uncaught exception: {error}"
-        super().__init__(detail)
+        super().__init__(detail=str(error), status_code=self.status_code)

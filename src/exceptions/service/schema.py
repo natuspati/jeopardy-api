@@ -1,9 +1,10 @@
+from fastapi import status
 from pydantic import ValidationError
 
-from exceptions.module.base import BaseModuleError
+from exceptions.service.base import BaseServiceError
 
 
-class BaseSchemaError(BaseModuleError):
+class BaseSchemaError(BaseServiceError):
     detail: str = "Schema error"
 
 
@@ -40,3 +41,9 @@ class SchemaValidationError(BaseSchemaError):
 
 class SchemaInputError(BaseSchemaError):
     detail: str = "Schema input error"
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+class AllFieldsUnsetValidationError(BaseSchemaError):
+    detail = "At least one field must be set"
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY

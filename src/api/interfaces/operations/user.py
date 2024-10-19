@@ -16,8 +16,9 @@ from api.schemas.user import (
 from api.services import LobbyService, UserService
 from api.services.pagination import PaginationService
 from api.utilities import run_concurrently
-from exceptions.http.authorization import InvalidCredentialsApiError
-from exceptions.http.not_found import NotFoundApiError
+from exceptions.service.authorization import InvalidCredentialsError
+from exceptions.service.not_found import NotFoundError
+from exceptions.service.resource import UserExistsError
 from settings import settings
 
 
@@ -63,7 +64,7 @@ class UserOperationsInterface:
         """
         user = await self._users_service.get_user_by_id(user_id)
         if not user:
-            raise NotFoundApiError()
+            raise NotFoundError()
         return user
 
     async def login_user(self, username: str, password: str) -> TokenSchema:
@@ -76,7 +77,7 @@ class UserOperationsInterface:
         """
         user = await self._users_service.get_user_by_username(username=username)
         if not user or not verify_password(password, user.password):
-            raise InvalidCredentialsApiError()
+            raise InvalidCredentialsError()
         return self._create_access_token(user)
 
     async def create_user(self, user_create: UserCreateSchema) -> UserInDBSchema:
@@ -86,32 +87,44 @@ class UserOperationsInterface:
         :param user_create: data to create user
         :return: created user
         """
+        existing_user = await self._users_service.get_user_by_username(
+            username=user_create.username,
+        )
+        if existing_user:
+            raise UserExistsError()
         return await self._users_service.create_user(user_create)
 
     async def update_user(
         self,
         user_id: int,
         user_update: UserUpdateSchema,
+        check: bool = False,
     ) -> UserInDBSchema:
         """
         Update user.
 
         :param user_id: user
         :param user_update: data to update user
+        :param check: check if user exists
         :return: updated user
         """
+        if check and await self._users_service.get_user_by_id(user_id):
+            raise NotFoundError()
         return await self._users_service.update_user_by_id(
             user_id=user_id,
             user_update=user_update,
         )
 
-    async def disable_user(self, user_id: int) -> None:
+    async def disable_user(self, user_id: int, check: bool = False) -> None:
         """
         Change user status to inactive.
 
         :param user_id: user id
+        :param check: check if user exists
         :return:
         """
+        if check and await self._users_service.get_user_by_id(user_id):
+            raise NotFoundError()
         await self._users_service.disable_user(user_id)
 
     @classmethod

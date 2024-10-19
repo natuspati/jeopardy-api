@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Jeopardy API"
 authors = ["Nurlat Bekdullayev <natuspati@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -18,6 +19,7 @@ alembic = "^1.13.2"
 pyjwt = "^2.9.0"
 bcrypt = "^4.2.0"
 python-multipart = "^0.0.9"
+httpx = "^0.27.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"

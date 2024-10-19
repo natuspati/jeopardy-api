@@ -1,20 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 
-from api.enums.app_state import AppEnvironmentEnum
-from exceptions.http.base import (
-    BaseHTTPError,
-    DetailedInternalApiError,
-    DetailedUncaughtApiError,
-    InternalApiError,
-)
-from exceptions.http.request import (
-    DetailedRequestValidationApiError,
-    RequestValidationApiError,
-)
-from exceptions.module.base import BaseModuleError
-from settings import settings
+from api.schemas.error import ErrorSchema, ValidationInputErrorsSchema
+from exceptions.http.base import BaseHTTPError, HTTPError, InternalHTTPError
+from exceptions.service.base import BaseServiceError
 
 
 def add_exception_handlers(app: FastAPI) -> None:
@@ -25,45 +15,35 @@ def add_exception_handlers(app: FastAPI) -> None:
     :return:
     """
     app.add_exception_handler(Exception, default_error_handler)
-    app.add_exception_handler(BaseModuleError, module_error_handler)
+    app.add_exception_handler(BaseServiceError, service_error_handler)
     app.add_exception_handler(RequestValidationError, validation_error_handler)
 
 
 async def default_error_handler(request: Request, error: Exception) -> ORJSONResponse:
     """
-    Handle all exceptions not inherited from `BaseModuleError`.
-
-    If application run in production environment, error details are not returned.
+    Handle all exceptions not inherited from `BaseServiceError`.
 
     :param request: request
     :param error: exception
     :return: internal service error response
     """
-    if settings.app_environment is AppEnvironmentEnum.prod:
-        http_error = InternalApiError()
-    else:
-        http_error = DetailedUncaughtApiError(error)
-    return _format_error_json_response(http_error)
+    return _format_error_json_response(InternalHTTPError(error))
 
 
-async def module_error_handler(
+async def service_error_handler(
     request: Request,
-    error: BaseModuleError,
+    error: BaseServiceError,
 ) -> ORJSONResponse:
     """
-    Handle exceptions inherited from `BaseModuleError`.
+    Handle exceptions from `BaseServiceError` for REST and Websocket endpoints.
 
-    If application run in production environment, error details are not returned.
+    Create response with status code from the error.
 
     :param request: request
-    :param error: exception
+    :param error: service error with status code
     :return: internal service error response
     """
-    if settings.app_environment is AppEnvironmentEnum.prod:
-        http_error = InternalApiError()
-    else:
-        http_error = DetailedInternalApiError(error)
-    return _format_error_json_response(http_error)
+    return _format_error_json_response(HTTPError(error))
 
 
 async def validation_error_handler(
@@ -77,15 +57,15 @@ async def validation_error_handler(
     :param error: request validation error
     :return: bad request error response
     """
-    if settings.app_environment is AppEnvironmentEnum.prod:
-        http_error = RequestValidationApiError()
-    else:
-        http_error = DetailedRequestValidationApiError(error)
-    return _format_error_json_response(http_error)
+    validation_errors = ValidationInputErrorsSchema(errors=error.args[0])
+    return ORJSONResponse(
+        content=validation_errors.model_dump(),
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    )
 
 
 def _format_error_json_response(error: BaseHTTPError) -> ORJSONResponse:
     return ORJSONResponse(
-        content={"detail": error.detail},
+        content=ErrorSchema(detail=error.detail).model_dump(),
         status_code=error.status_code,
     )

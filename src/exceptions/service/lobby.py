@@ -1,12 +1,12 @@
 from fastapi import status
 
-from exceptions.http.base import BaseApiError
+from exceptions.service.base import BaseServiceError
 
 
-class LobbyApiError(BaseApiError):
+class LobbyError(BaseServiceError):
     detail = "Operation on Lobby API failed"
     status_code = status.HTTP_400_BAD_REQUEST
 
 
-class PlayerLobbyDoesNotMatchApiError(LobbyApiError):
+class PlayerLobbyDoesNotMatchError(LobbyError):
     detail = "Player lobby does not match lobby"

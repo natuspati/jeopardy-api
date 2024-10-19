@@ -1,4 +1,4 @@
-from sqlalchemy import Enum, ForeignKey, Integer, String
+from sqlalchemy import Enum, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from api.enums import PlayerStateEnum
@@ -7,6 +7,7 @@ from database.base_model import BaseDBModelWithID
 
 class PlayerModel(BaseDBModelWithID):
     __tablename__ = "player"
+    __table_args__ = (UniqueConstraint("lobby_id", "user_id", name="uq_lobby_user"),)
 
     name: Mapped[str] = mapped_column(String(20), nullable=False)
     score: Mapped[int | None] = mapped_column(Integer, nullable=True)

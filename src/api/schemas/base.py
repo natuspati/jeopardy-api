@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from exceptions.http.schema import AllFieldsUnsetValidationApiError
+from exceptions.service.schema import AllFieldsUnsetValidationError
 
 
 class BaseSchema(BaseModel):
@@ -32,7 +32,7 @@ class OneFieldSetSchemaMixin:
         :return: schema with at least one field set
         """
         if not values.model_fields_set:
-            raise AllFieldsUnsetValidationApiError()
+            raise AllFieldsUnsetValidationError()
         return values
 
 

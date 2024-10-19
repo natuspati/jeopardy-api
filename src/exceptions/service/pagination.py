@@ -1,7 +1,7 @@
-from exceptions.module.base import BaseModuleError
+from exceptions.service.base import BaseServiceError
 
 
-class PaginationError(BaseModuleError):
+class PaginationError(BaseServiceError):
     detail = "Pagination error"
 
 

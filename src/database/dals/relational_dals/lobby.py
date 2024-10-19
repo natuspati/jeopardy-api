@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from api.enums import OrderQueryEnum
+from api.schemas.lobby import LobbyCreateSchema
 from database.dals.relational_dals.base import BaseDAL
 from database.models.lobby import LobbyModel
 from database.query_managers import LobbyQueryManager
@@ -46,3 +47,12 @@ class LobbyDAL(BaseDAL):
             where={"id": lobby_id},
             related=["player_associations"],
         )
+
+    async def create_lobby(self, lobby_create: LobbyCreateSchema) -> LobbyModel:
+        """
+        Create lobby.
+
+        :param lobby_create: lobby create data
+        :return: created lobby
+        """
+        return await self.insert(**lobby_create.model_dump())

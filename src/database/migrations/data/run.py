@@ -4,15 +4,15 @@ from sqlalchemy import Delete, Insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dals.relational_dals.base import common_db_exceptions
-from database.manager import db_manager
+from database.manager import default_db_manager
 from database.migrations.data.queries import ORDERED_QUERIES
-from exceptions.module.database import DatabaseDetailError
+from exceptions.service.database import DatabaseDetailError
 
 logger = logging.getLogger(__name__)
 
 
 async def run_data_migrations(direction: bool) -> None:
-    async with db_manager.session() as session:
+    async with default_db_manager.session() as session:
         await _run_queries(session=session, direction=direction)
     logger.info("Successfully run data migrations.")
 

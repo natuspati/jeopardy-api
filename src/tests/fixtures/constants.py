@@ -24,3 +24,18 @@ def default_timestamp() -> datetime:
 @pytest.fixture(scope="session")
 def default_limit() -> int:
     return 10
+
+
+@pytest.fixture(scope="session")
+def default_page() -> int:
+    return 1
+
+
+@pytest.fixture(scope="session")
+def default_page_size() -> int:
+    return 2
+
+
+@pytest.fixture(scope="session")
+def batch_size() -> int:
+    return 10

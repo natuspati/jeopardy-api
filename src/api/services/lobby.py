@@ -2,12 +2,14 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends
+from pydantic import ValidationError
 
 from api.enums.query import OrderQueryEnum
-from api.schemas.lobby import LobbyInDBSchema
+from api.schemas.lobby import LobbyCreateSchema, LobbyInDBSchema
 from api.schemas.nested.player import LobbyWithPlayersInDBSchema
 from api.services.mixins import DBModelValidatorMixin
 from database.dals.relational_dals.lobby import LobbyDAL
+from exceptions.service.schema import SchemaValidationError
 
 
 class LobbyService(DBModelValidatorMixin):
@@ -53,6 +55,20 @@ class LobbyService(DBModelValidatorMixin):
         """
         lobby_in_db = await self._lobby_dal.get_lobby_by_id(lobby_id=lobby_id)
         return self.validate(lobby_in_db, LobbyWithPlayersInDBSchema)
+
+    async def create_lobby(self, name: str) -> LobbyInDBSchema:
+        """
+        Create lobby.
+
+        :param name: str
+        :return: created lobby
+        """
+        try:
+            lobby_create = LobbyCreateSchema(name=name)
+        except ValidationError as error:
+            raise SchemaValidationError(error) from error
+        lobby = await self._lobby_dal.create_lobby(lobby_create)
+        return self.validate(lobby, LobbyInDBSchema)
 
     async def total_count(self) -> int:
         """

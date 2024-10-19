@@ -1,7 +1,7 @@
 from polyfactory.factories.pydantic_factory import ModelFactory
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 
-from api.schemas.user import UserCreateSchema, UserUpdateSchema
+from api.schemas.user import UserCreateSchema, UserInDBSchema, UserUpdateSchema
 from database.models.user import UserModel
 
 
@@ -15,3 +15,7 @@ class UserCreateFactory(ModelFactory[UserCreateSchema]):
 
 class UserUpdateFactory(ModelFactory[UserUpdateSchema]):
     __model__ = UserUpdateSchema
+
+
+class UserInDBFactory(ModelFactory[UserInDBSchema]):
+    __model__ = UserInDBSchema

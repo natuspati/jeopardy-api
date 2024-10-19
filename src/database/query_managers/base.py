@@ -25,7 +25,7 @@ from sqlalchemy.sql.dml import ReturningDelete, ReturningInsert, ReturningUpdate
 
 from cutom_types.database import ASSOCIATION_MODEL_TYPE
 from database.base_model import BaseDBModel
-from exceptions.module.query_manager import (
+from exceptions.service.query_manager import (
     AssociationModelNotFoundError,
     InvalidBetweenClauseError,
     InvalidInClauseError,

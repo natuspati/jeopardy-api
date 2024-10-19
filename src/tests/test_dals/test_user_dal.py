@@ -23,7 +23,7 @@ async def test_get_user_by_id(
     users: dict[str, list[UserModel]],
     user_dal: UserDAL,
 ):
-    user: UserModel = choose_from_list(users["active"])
+    user = choose_from_list(users["active"])
     fetched_user = await user_dal.get_user_by_id(user.id)
     assert fetched_user == user
 
@@ -32,7 +32,7 @@ async def test_get_user_by_username(
     users: dict[str, list[UserModel]],
     user_dal: UserDAL,
 ):
-    user: UserModel = choose_from_list(users["active"])
+    user = choose_from_list(users["active"])
     fetched_user = await user_dal.get_user_by_username(user.username)
     assert fetched_user == user
 
@@ -53,7 +53,7 @@ async def test_update_user_by_id(
     users: dict[str, list[UserModel]],
     user_dal: UserDAL,
 ):
-    user: UserModel = choose_from_list(users["active"])
+    user = choose_from_list(users["active"])
     user_update: UserUpdateSchema = UserUpdateFactory.build()
     updated_user = await user_dal.update_user_by_id(
         user_id=user.id,
@@ -70,6 +70,6 @@ async def test_update_user_by_id(
 
 
 async def test_disable_user(users: dict[str, list[UserModel]], user_dal: UserDAL):
-    user: UserModel = choose_from_list(users["active"])
+    user = choose_from_list(users["active"])
     disabled_user = await user_dal.disable_user(user.id)
     assert disabled_user.is_active is False

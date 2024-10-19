@@ -15,7 +15,7 @@ class UserService(DBModelValidatorMixin):
     ):
         self._user_dal = user_dal
 
-    async def get_users(self, limit: int, offset: int = 0) -> UserInDBSchema:
+    async def get_users(self, limit: int, offset: int = 0) -> list[UserInDBSchema]:
         """
         Get users.
 

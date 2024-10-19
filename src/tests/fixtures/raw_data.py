@@ -2,7 +2,13 @@ from datetime import datetime
 
 import pytest
 
+from api.authnetication import hash_password
 from api.enums import PlayerStateEnum
+
+
+@pytest.fixture
+def password() -> str:
+    return "default_password"
 
 
 @pytest.fixture
@@ -13,36 +19,36 @@ def user_raw_data(
         {
             "id": 1,
             "username": "adele@mail.com",
-            "password": "adele",
+            "password": hash_password("adele"),
             "is_active": True,
             "created_at": default_timestamp,
         },
         {
             "id": 2,
             "username": "beyonce@mail.com",
-            "password": "beyonce",
+            "password": hash_password("beyonce"),
             "is_active": True,
             "created_at": default_timestamp,
         },
         {
             "id": 3,
             "username": "cardib@mail.com",
-            "password": "cardib",
+            "password": hash_password("cardib"),
             "is_active": True,
             "created_at": default_timestamp,
         },
         {
             "id": 4,
             "username": "drake@mail.com",
-            "password": "drake",
-            "is_active": False,
+            "password": hash_password("drake"),
+            "is_active": True,
             "created_at": default_timestamp,
         },
         {
             "id": 5,
             "username": "eminem@mail.com",
-            "password": "eminem",
-            "is_active": True,
+            "password": hash_password("eminem"),
+            "is_active": False,
             "created_at": default_timestamp,
         },
     )
@@ -103,17 +109,15 @@ def player_raw_data(
         # Lobby 1 players
         (adele, lobby1, None, PlayerStateEnum.lead),
         (beyonce, lobby1, 100, PlayerStateEnum.playing),
-        (cardib, lobby1, 50, PlayerStateEnum.playing),
-        (drake, lobby1, None, PlayerStateEnum.banned),
+        (cardib, lobby1, None, PlayerStateEnum.banned),
         # Lobby 2 players
-        (eminem, lobby2, None, PlayerStateEnum.lead),
-        (cardib, lobby2, None, PlayerStateEnum.waiting),
+        (cardib, lobby2, None, PlayerStateEnum.lead),
+        (beyonce, lobby2, None, PlayerStateEnum.waiting),
         (adele, lobby2, None, PlayerStateEnum.waiting),
         # Lobby 3 players
         (beyonce, lobby3, None, PlayerStateEnum.lead),
-        (drake, lobby3, None, PlayerStateEnum.banned),
-        (eminem, lobby3, 200, PlayerStateEnum.playing),
-        (cardib, lobby3, 0, PlayerStateEnum.playing),
+        (cardib, lobby3, None, PlayerStateEnum.banned),
+        (adele, lobby3, 200, PlayerStateEnum.playing),
     ]
 
     players = []

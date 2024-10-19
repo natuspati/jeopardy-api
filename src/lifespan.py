@@ -3,7 +3,8 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
-from database.manager import db_manager
+from api.utilities import customize_openapi
+from database.manager import default_db_manager
 
 
 @asynccontextmanager
@@ -29,6 +30,7 @@ async def run_startup_events(app: FastAPI) -> None:
     :param app: application
     :return:
     """
+    app.openapi = customize_openapi(app.openapi)
 
 
 async def run_shutdown_events(app: FastAPI) -> None:
@@ -39,5 +41,5 @@ async def run_shutdown_events(app: FastAPI) -> None:
     :return:
     """
     # Close the DB connection.
-    if db_manager._engine is not None:  # noqa: WPS437
-        await db_manager.close()
+    if default_db_manager._engine is not None:  # noqa: WPS437
+        await default_db_manager.close()

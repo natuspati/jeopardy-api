@@ -5,7 +5,7 @@ import jwt
 from pydantic import ValidationError
 
 from api.schemas.authnetication import TokenDataSchema
-from exceptions.http.authorization import InvalidTokenApiError
+from exceptions.service.authorization import InvalidTokenError
 from settings import settings
 
 
@@ -23,17 +23,19 @@ def decode_token(token: str) -> TokenDataSchema:
             algorithms=[settings.algorithm],
         )
     except jwt.InvalidTokenError:
-        raise InvalidTokenApiError()
+        raise InvalidTokenError()
 
     try:
         return TokenDataSchema.model_validate(payload)
     except ValidationError:
-        raise InvalidTokenApiError()
+        raise InvalidTokenError()
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """
     Create a JWT access token.
+
+    If expiration time is not provided, current time + value from settings is used.
 
     :param data: data to insert into payload
     :param expires_delta: expiration time from current time

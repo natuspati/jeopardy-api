@@ -5,11 +5,17 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from api.interfaces import UserOperationsInterface
 from api.schemas.authnetication import TokenSchema
+from exceptions.responses import UNAUTHORIZED_RESPONSE, generate_responses
 
 token_router = APIRouter(prefix="/token", tags=["Token"])
 
 
-@token_router.post("/", response_model=TokenSchema, status_code=status.HTTP_201_CREATED)
+@token_router.post(
+    "/",
+    response_model=TokenSchema,
+    status_code=status.HTTP_201_CREATED,
+    responses=generate_responses(UNAUTHORIZED_RESPONSE),
+)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     integration_interface: Annotated[UserOperationsInterface, Depends()],

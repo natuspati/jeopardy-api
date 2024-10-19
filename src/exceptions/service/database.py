@@ -1,8 +1,8 @@
-from exceptions.module.base import BaseModuleError
+from exceptions.service.base import BaseServiceError
 
 
-class DatabaseError(BaseModuleError):
-    detail = "Database module error"
+class DatabaseError(BaseServiceError):
+    detail = "Database error"
 
 
 class DatabaseDetailError(DatabaseError):

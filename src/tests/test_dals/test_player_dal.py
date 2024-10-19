@@ -10,7 +10,7 @@ async def test_get_player_by_id(
     player_dal: PlayerDAL,
 ):
     players_in_lobby = choose_from_list(players)
-    player: PlayerModel = choose_from_list(players_in_lobby)
+    player = choose_from_list(players_in_lobby)
     fetched_player = await player_dal.get_player_by_id(player.id)
     assert fetched_player == player
 
@@ -20,6 +20,6 @@ async def test_ban_player_by_id(
     player_dal: PlayerDAL,
 ):
     players_in_lobby = choose_from_list(players)
-    player: PlayerModel = choose_from_list(players_in_lobby)
+    player = choose_from_list(players_in_lobby)
     banned_player = await player_dal.ban_player_by_id(player.id)
     assert banned_player.state == PlayerStateEnum.banned

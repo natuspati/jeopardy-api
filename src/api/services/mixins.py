@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from api.schemas.base import BaseSchema
 from database.base_model import BaseDBModel
-from exceptions.module.schema import SchemaValidationError
+from exceptions.service.schema import SchemaValidationError
 
 
 class DBModelValidatorMixin:

@@ -1,11 +1,14 @@
 from typing import Annotated
 
 from fastapi import Depends
+from pydantic import ValidationError
 
+from api.enums import PlayerStateEnum
 from api.schemas.nested.player import PlayerWithLobbyUserInDBSchema
-from api.schemas.player import PlayerInDBSchema
+from api.schemas.player import PlayerCreateSchema, PlayerInDBSchema
 from api.services.mixins import DBModelValidatorMixin
 from database.dals import PlayerDAL
+from exceptions.service.schema import SchemaValidationError
 
 
 class PlayerService(DBModelValidatorMixin):
@@ -15,7 +18,10 @@ class PlayerService(DBModelValidatorMixin):
     ):
         self._player_dal = player_dal
 
-    async def get_player_by_id(self, player_id: int) -> PlayerWithLobbyUserInDBSchema:
+    async def get_player_by_id(
+        self,
+        player_id: int,
+    ) -> PlayerWithLobbyUserInDBSchema | None:
         """
         Get player by id with associated lobbies.
 
@@ -23,6 +29,24 @@ class PlayerService(DBModelValidatorMixin):
         :return: player with associated lobbies
         """
         player_in_db = await self._player_dal.get_player_by_id(player_id)
+        return self.validate(player_in_db, PlayerWithLobbyUserInDBSchema)
+
+    async def get_player_by_user_lobby(
+        self,
+        user_id: int,
+        lobby_id: int,
+    ) -> PlayerWithLobbyUserInDBSchema | None:
+        """
+        Get player by user and lobby ids.
+
+        :param user_id: user id
+        :param lobby_id: lobby id
+        :return: player or None
+        """
+        player_in_db = await self._player_dal.get_player_by_user_lobby(
+            user_id=user_id,
+            lobby_id=lobby_id,
+        )
         return self.validate(player_in_db, PlayerWithLobbyUserInDBSchema)
 
     async def ban_player_by_id(self, player_id: int) -> PlayerInDBSchema:
@@ -34,3 +58,31 @@ class PlayerService(DBModelValidatorMixin):
         """
         player_in_db = await self._player_dal.ban_player_by_id(player_id)
         return self.validate(player_in_db, PlayerInDBSchema)
+
+    async def create_player(
+        self,
+        name: str,
+        state: PlayerStateEnum,
+        lobby_id: int,
+        user_id: int,
+    ) -> PlayerInDBSchema:
+        """
+        Create player.
+
+        :param name: player name
+        :param state: player state
+        :param lobby_id: lobby id
+        :param user_id: user id
+        :return: created player
+        """
+        try:
+            player_create = PlayerCreateSchema(
+                name=name,
+                state=state,
+                lobby_id=lobby_id,
+                user_id=user_id,
+            )
+        except ValidationError as error:
+            raise SchemaValidationError(error) from error
+        player = await self._player_dal.create_player(player_create)
+        return self.validate(player, PlayerInDBSchema)
