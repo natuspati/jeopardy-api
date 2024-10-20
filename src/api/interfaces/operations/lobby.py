@@ -148,6 +148,19 @@ class LobbyOperationsInterface:
             user_id=user_id,
         )
 
+    async def start_lobby(self, lobby_id: int) -> LobbyWithPlayersInDBSchema:
+        """
+        Start lobby.
+
+        :param lobby_id: lobby id
+        :return: lobby with players in `playing` state.
+        """
+        await self._player_service.update_state_by_lobby_id(
+            lobby_id=lobby_id,
+            state=PlayerStateEnum.playing,
+        )
+        return await self.get_lobby(lobby_id=lobby_id)
+
     async def ban_player(
         self,
         lobby_id: int,

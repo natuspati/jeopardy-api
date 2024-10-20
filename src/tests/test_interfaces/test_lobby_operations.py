@@ -181,3 +181,22 @@ async def test_create_waiting_player_fails_if_banned_or_existing(
             user_id=existing_player.user_id,
             lobby_player_add=player_add,
         )
+
+
+async def test_start_lobby(
+    players: list[list[PlayerModel]],
+    lobby_operations: LobbyOperationsInterface,
+):
+    lobby_id = 3
+    players_in_waiting_lobby = players[lobby_id - 1]
+    waiting_players = [
+        player
+        for player in players_in_waiting_lobby
+        if player.state == PlayerStateEnum.waiting
+    ]
+    if not waiting_players:
+        pytest.fail("Third lobby must have waiting players")
+    started_lobby = await lobby_operations.start_lobby(lobby_id)
+    for player in started_lobby.players:
+        assert player.state not in {PlayerStateEnum.waiting, PlayerStateEnum.inactive}
+    assert started_lobby.get_lead()

@@ -7,7 +7,9 @@ from api.enums import PlayerStateEnum
 from api.schemas.nested.player import PlayerWithLobbyUserInDBSchema
 from api.schemas.player import PlayerCreateSchema, PlayerInDBSchema
 from api.services.mixins import DBModelValidatorMixin
+from cutom_types.player import UPDATE_PLAYER_STATE_TYPE
 from database.dals import PlayerDAL
+from exceptions.service.player import UpdatePlayerStateInvalidError
 from exceptions.service.schema import SchemaValidationError
 
 
@@ -48,6 +50,36 @@ class PlayerService(DBModelValidatorMixin):
             lobby_id=lobby_id,
         )
         return self.validate(player_in_db, PlayerWithLobbyUserInDBSchema)
+
+    async def update_state_by_lobby_id(
+        self,
+        lobby_id: int,
+        state: UPDATE_PLAYER_STATE_TYPE,
+    ) -> list[PlayerInDBSchema]:
+        """
+        Update player states in a lobby.
+
+        State can only be `waiting`, `playing` or `inactive`.
+
+        `lead` and `banned` players are unaffected.
+
+        :param lobby_id: lobby id
+        :param state: player state to update to
+        :return: updated players
+        """
+        valid_states = (
+            PlayerStateEnum.waiting,
+            PlayerStateEnum.playing,
+            PlayerStateEnum.inactive,
+        )
+        if state in valid_states:
+            updated_players = await self._player_dal.update_state_by_lobby_id(
+                lobby_id=lobby_id,
+                state=state,
+            )
+        else:
+            raise UpdatePlayerStateInvalidError()
+        return self.validate(updated_players, PlayerInDBSchema)
 
     async def ban_player_by_id(self, player_id: int) -> PlayerInDBSchema:
         """

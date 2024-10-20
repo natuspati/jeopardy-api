@@ -117,7 +117,7 @@ def player_raw_data(
         # Lobby 3 players
         (beyonce, lobby3, None, PlayerStateEnum.lead),
         (cardib, lobby3, None, PlayerStateEnum.banned),
-        (adele, lobby3, 200, PlayerStateEnum.playing),
+        (adele, lobby3, 200, PlayerStateEnum.waiting),
     ]
 
     players = []

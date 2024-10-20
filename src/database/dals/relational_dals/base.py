@@ -126,6 +126,7 @@ class BaseDAL(ABC):  # noqa: WPS338
         where: dict[str, Any],
         model: type[BaseDBModel] | None = None,
         returning: bool = True,
+        many: bool = False,
         **values: Any,
     ):
         """
@@ -134,6 +135,7 @@ class BaseDAL(ABC):  # noqa: WPS338
         :param where: where clause
         :param model: database model
         :param returning: whether to return update row
+        :param many: return several rows
         :param values: values to update in the row
         :return: updated row or None
         """
@@ -144,7 +146,7 @@ class BaseDAL(ABC):  # noqa: WPS338
             **values,
         )
         if returning:
-            return await self._scalar(query)
+            return await self._scalars(query) if many else await self._scalar(query)
         await self._execute(query)
 
     async def delete(

@@ -36,6 +36,29 @@ class PlayerDAL(BaseDAL):
             where={"user_id": user_id, "lobby_id": lobby_id},
         )
 
+    async def update_state_by_lobby_id(
+        self,
+        lobby_id: int,
+        state: PlayerStateEnum,
+    ) -> list[PlayerModel]:
+        """
+        Update player states in lobby.
+
+        Players with state `lead` and `banned` cannot be updated.
+
+        :param lobby_id:
+        :param state:
+        :return: list of updated players
+        """
+        return await self.update(
+            where={
+                "lobby_id": lobby_id,
+                "state": ("not_in", (PlayerStateEnum.lead, PlayerStateEnum.banned)),
+            },
+            many=True,
+            state=state,
+        )
+
     async def ban_player_by_id(self, player_id: int) -> PlayerModel:
         """
         Change player state to banned.
