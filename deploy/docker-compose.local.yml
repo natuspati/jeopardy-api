@@ -17,5 +17,17 @@ services:
       retries: 1
       start_period: 5s
 
+  redis:
+    image: redis:latest
+    container_name: redis_jeopardy
+    ports:
+      - "${JEOPARDY_REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 1
+      start_period: 5s
+
 volumes:
   postgres_data:

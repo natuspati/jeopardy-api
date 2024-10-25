@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from api.dependencies.authorization import check_current_user_in_lobby, get_current_user
+from api.dependencies import check_current_user_in_lobby, get_current_user
 from api.interfaces import LobbyOperationsInterface
 from api.schemas.nested.player import PlayerWithLobbyUserShowSchema
 from api.schemas.player import LobbyPlayerAddSchema, PlayerInDBSchema

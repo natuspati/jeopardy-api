@@ -5,10 +5,10 @@ from factories.token import TokenDataFactory
 from utilities import choose_from_list
 
 from api.authnetication import create_access_token
-from api.dependencies import get_current_user
-from api.dependencies.authorization import (
+from api.dependencies import (
     check_current_user,
     check_current_user_in_lobby,
+    get_current_user,
 )
 from api.schemas.authnetication import TokenDataSchema
 from api.services import UserService

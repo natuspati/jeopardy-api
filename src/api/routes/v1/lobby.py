@@ -3,12 +3,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from api.dependencies import (
+    check_current_user_in_lobby,
     get_current_user,
     get_date_parameters,
     get_order_parameter,
     get_pagination_parameters,
 )
-from api.dependencies.authorization import check_current_user_in_lobby
 from api.interfaces import LobbyOperationsInterface
 from api.routes.v1.player import player_router
 from api.schemas.lobby import LobbyPlayerCreateSchema, PaginatedLobbiesSchema

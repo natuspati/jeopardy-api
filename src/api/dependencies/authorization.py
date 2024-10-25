@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Header
 
 from api.authnetication import decode_token, oauth2_scheme
 from api.schemas.nested.user import UserWithLobbiesInDBSchema
@@ -64,3 +64,23 @@ async def check_current_user_in_lobby(
     if not user_with_lobbies.has_lobby(lobby_id):
         raise UserNotInLobby()
     return user_with_lobbies
+
+
+async def get_current_user_from_header(
+    user_service: Annotated[UserService, Depends()],
+    authorization: Annotated[str | None, Header()] = None,
+) -> UserInDBSchema:
+    """
+    Get current user from authorization header.
+
+    :param user_service: user service
+    :param authorization: authorization header
+    :return: user in database
+    """
+    if authorization is None:
+        raise InvalidCredentialsError()
+    token = authorization.replace("Bearer ", "")
+    return await get_current_user(
+        token=token,
+        user_service=user_service,
+    )

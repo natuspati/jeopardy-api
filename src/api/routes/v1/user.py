@@ -3,8 +3,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from api.dependencies import get_current_user, get_pagination_parameters
-from api.dependencies.authorization import check_current_user
+from api.dependencies import (
+    check_current_user,
+    get_current_user,
+    get_pagination_parameters,
+)
 from api.interfaces import UserOperationsInterface
 from api.schemas.nested.user import UserWithLobbiesShowSchema
 from api.schemas.query import PaginationSchema
