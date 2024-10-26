@@ -4,12 +4,12 @@ from typing import Any
 import jwt
 from pydantic import ValidationError
 
-from api.schemas.authnetication import TokenDataSchema
+from api.schemas.authnetication import UserInTokenSchema
 from exceptions.service.authorization import InvalidTokenError
 from settings import settings
 
 
-def decode_token(token: str) -> TokenDataSchema:
+def decode_token(token: str) -> UserInTokenSchema:
     """
     Decode a JWT token.
 
@@ -26,7 +26,7 @@ def decode_token(token: str) -> TokenDataSchema:
         raise InvalidTokenError()
 
     try:
-        return TokenDataSchema.model_validate(payload)
+        return UserInTokenSchema.model_validate(payload)
     except ValidationError:
         raise InvalidTokenError()
 

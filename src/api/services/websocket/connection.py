@@ -4,7 +4,8 @@ from typing import AsyncGenerator
 from fastapi import WebSocket
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
-from api.schemas.websocket import BaseWebsocketMessageSchema
+from api.messages.base import BaseWebsocketMessage
+from exceptions.service.base import BaseServiceError
 from exceptions.service.websocket import WebsocketInvalidStateError
 
 
@@ -13,7 +14,21 @@ class Connection:
         self._id = connection_id
         self._websocket = websocket
 
+    @property
+    def id(self) -> str:
+        """
+        Get connection id.
+
+        :return: connection id
+        """
+        return self._id
+
     async def __aenter__(self):
+        """
+        Connect to websocket.
+
+        :return:
+        """
         await self._websocket.accept()
         return self
 
@@ -23,9 +38,28 @@ class Connection:
         exc: BaseException | None,
         tb: TracebackType | None,
     ):
-        await self._websocket.close()
+        """
+        Disconnect from websocket.
+
+        :param exc_type: error type if present
+        :param exc: error if present
+        :param tb: traceback if present
+        :return:
+        """
+        if isinstance(exc, BaseServiceError):
+            code = exc.ws_status_code
+            reason = exc.detail
+        else:
+            code = BaseServiceError.ws_status_code
+            reason = BaseServiceError.detail
+        await self._websocket.close(code=code, reason=reason)
 
     async def __aiter__(self) -> AsyncGenerator[dict, None]:
+        """
+        Iterate over messages in websocket connection.
+
+        :yield: message as dictionary
+        """
         self._check_client_state()
         while True:
             try:
@@ -33,9 +67,15 @@ class Connection:
             except WebSocketDisconnect:
                 break
 
-    async def send(self, message: BaseWebsocketMessageSchema) -> None:
+    async def send(self, message: BaseWebsocketMessage) -> None:
+        """
+        Send message to websocket connection.
+
+        :param message: message
+        :return:
+        """
         self._check_client_state()
-        await self._websocket.send_json(message.model_dump())
+        await self._websocket.send_json(message.to_dict())
 
     def _check_client_state(
         self,

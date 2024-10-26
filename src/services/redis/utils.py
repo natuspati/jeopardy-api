@@ -188,7 +188,7 @@ def deserialize(  # noqa: C901
     try:
         deserialized_value = orjson.loads(value)
     except JSONDecodeError as json_error:
-        try:
+        try:  # noqa: WPS505
             deserialized_value = value.decode(settings.redis_encoding)
         except UnicodeDecodeError:
             raise JSONDecoderError(value) from json_error

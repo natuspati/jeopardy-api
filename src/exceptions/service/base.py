@@ -21,4 +21,4 @@ class BaseServiceError(BaseError):
     ):
         super().__init__(detail or self.detail)
         self.status_code = status_code or self.status_code  # noqa: WPS601
-        self.ws_status_code = ws_status_code or self.ws_status_code
+        self.ws_status_code = ws_status_code or self.ws_status_code  # noqa: WPS601

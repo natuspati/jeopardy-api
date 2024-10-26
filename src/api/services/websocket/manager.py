@@ -17,7 +17,7 @@ class ConnectionManager:
         Get room.
 
         :param room_id: room id
-        :param raise_error: whether to raise exception if room does not exist, False by default
+        :param raise_error: whether to error out if room does not exist
         :return: room
         """
         room = self._rooms.get(room_id)
@@ -40,13 +40,13 @@ class ConnectionManager:
         :param room_id: room id
         :param connection_id: connection id
         :param websocket: websocket connection
-        :param disconnect_existing: whether to disconnect existing connection, True by default
+        :param disconnect_existing: whether to disconnect existing connection
         :return: connection
         """
-        room = self._get_or_create_room(room_id)
+        room = self.get_or_create_room(room_id)
         return room.create_connection(connection_id, websocket, disconnect_existing)
 
-    def _get_or_create_room(self, room_id: str) -> Room:
+    def get_or_create_room(self, room_id: str) -> Room:
         """
         Get or create a room.
 

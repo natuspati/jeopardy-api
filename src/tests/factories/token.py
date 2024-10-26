@@ -1,7 +1,7 @@
 from polyfactory.factories.pydantic_factory import ModelFactory
 
-from api.schemas.authnetication import TokenDataSchema
+from api.schemas.authnetication import UserInTokenSchema
 
 
-class TokenDataFactory(ModelFactory[TokenDataSchema]):
-    __model__ = TokenDataSchema
+class UserTokenFactory(ModelFactory[UserInTokenSchema]):
+    __model__ = UserInTokenSchema

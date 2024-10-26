@@ -37,7 +37,7 @@ class PlayerService(DBModelValidatorMixin):
         self,
         user_id: int,
         lobby_id: int,
-    ) -> PlayerWithLobbyUserInDBSchema | None:
+    ) -> PlayerInDBSchema | None:
         """
         Get player by user and lobby ids.
 
@@ -49,7 +49,7 @@ class PlayerService(DBModelValidatorMixin):
             user_id=user_id,
             lobby_id=lobby_id,
         )
-        return self.validate(player_in_db, PlayerWithLobbyUserInDBSchema)
+        return self.validate(player_in_db, PlayerInDBSchema)
 
     async def update_state_by_lobby_id(
         self,

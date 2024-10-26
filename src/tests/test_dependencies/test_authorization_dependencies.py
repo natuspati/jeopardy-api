@@ -1,7 +1,8 @@
 from datetime import timedelta
 
 import pytest
-from factories.token import TokenDataFactory
+from factories.token import UserTokenFactory
+from factories.user import UserInTokenFactory
 from utilities import choose_from_list
 
 from api.authnetication import create_access_token
@@ -10,7 +11,7 @@ from api.dependencies import (
     check_current_user_in_lobby,
     get_current_user,
 )
-from api.schemas.authnetication import TokenDataSchema
+from api.schemas.authnetication import UserInTokenSchema
 from api.services import UserService
 from database.models.player import PlayerModel
 from database.models.user import UserModel
@@ -22,52 +23,54 @@ from exceptions.service.authorization import (
 )
 
 
-async def test_get_current_user(
-    active_user: UserModel,
-    user_service: UserService,
-):
-    token_data = TokenDataSchema(user_id=active_user.id, sub=active_user.username)
+async def test_get_current_user(active_user: UserModel):
+    token_data = UserInTokenSchema(
+        user_id=active_user.id,
+        sub=active_user.username,
+        is_active=True,
+    )
     access_token = create_access_token(
         data=token_data.model_dump(by_alias=True),
     )
-    current_user = await get_current_user(token=access_token, user_service=user_service)
-    assert current_user.model_dump() == active_user.to_dict()
+    current_user = await get_current_user(token=access_token)
+    assert current_user.username == active_user.username
+    assert current_user.user_id == active_user.id
+    assert current_user.is_active == active_user.is_active
 
 
 async def test_get_current_user_fails_if_inactive(
     inactive_user: UserModel,
     user_service: UserService,
 ):
-    token_data = TokenDataSchema(user_id=inactive_user.id, sub=inactive_user.username)
+    token_data = UserInTokenSchema(
+        user_id=inactive_user.id,
+        sub=inactive_user.username,
+        is_active=False,
+    )
     access_token = create_access_token(
         data=token_data.model_dump(by_alias=True),
     )
     with pytest.raises(InvalidCredentialsError):
-        await get_current_user(token=access_token, user_service=user_service)
+        await get_current_user(token=access_token)
 
 
-async def test_get_current_user_fails_if_invalid_token(
-    user_service: UserService,
-):
+async def test_get_current_user_fails_if_invalid_token():
     access_token_expires = timedelta(seconds=-1)
-    token_data: TokenDataSchema = TokenDataFactory.build()
+    token_data: UserInTokenSchema = UserTokenFactory.build()
     access_token = create_access_token(
         data=token_data.model_dump(by_alias=True),
         expires_delta=access_token_expires,
     )
     with pytest.raises(InvalidTokenError):
-        await get_current_user(token=access_token, user_service=user_service)
+        await get_current_user(token=access_token)
 
 
-async def test_check_current_user(
-    active_user: UserModel,
-    user_service: UserService,
-):
-    user = await user_service.get_user_by_username(active_user.username)
-    current_user = await check_current_user(user_id=user.id, current_user=user)
+async def test_check_current_user():
+    user = UserInTokenFactory.build()
+    current_user = await check_current_user(user_id=user.user_id, current_user=user)
     assert current_user == user
     with pytest.raises(NotOwnerError):
-        await check_current_user(user_id=user.id + 1, current_user=user)
+        await check_current_user(user_id=user.user_id + 1, current_user=user)
 
 
 async def test_check_current_user_in_lobby(
@@ -83,13 +86,16 @@ async def test_check_current_user_in_lobby(
     )
     if not selected_user:
         pytest.fail("User must exist in database that is in the lobby")
-    current_user = await user_service.get_user_by_username(selected_user.username)
+    current_user = UserInTokenFactory.build(
+        user_id=selected_user.id,
+        username=selected_user.username,
+    )
     user = await check_current_user_in_lobby(
         lobby_id=player_in_lobby.lobby_id,
         current_user=current_user,
         user_service=user_service,
     )
-    assert user.id == current_user.id
+    assert user.id == current_user.user_id
     assert user.has_lobby(player_in_lobby.lobby_id)
 
     users_ids_in_lobby = [player.user_id for player in players_in_lobby]
@@ -99,7 +105,8 @@ async def test_check_current_user_in_lobby(
     )
     if not user_not_in_lobby:
         pytest.fail("User must exist in database that is not in the lobby")
-    current_user_not_in_lobby = await user_service.get_user_by_username(
+    current_user_not_in_lobby = UserInTokenFactory.build(
+        user_id=user_not_in_lobby.id,
         username=user_not_in_lobby.username,
     )
     with pytest.raises(UserNotInLobby):

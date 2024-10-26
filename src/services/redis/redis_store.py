@@ -154,7 +154,9 @@ class RedisStoreService:
         )
 
     async def remove_entities(
-        self, *entity_keys: bytes | str | memoryview, background: bool = False
+        self,
+        *entity_keys: bytes | str | memoryview,
+        background: bool = False,
     ) -> None:
         """
         Remove an object from storage.

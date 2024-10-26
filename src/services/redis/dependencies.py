@@ -1,4 +1,4 @@
-from typing import AsyncGenerator
+from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends
 from redis.asyncio.client import Redis
@@ -14,26 +14,46 @@ class FakeRedis:
         self._data = {}
 
     async def get(self, name: str) -> REDIS_VALUE_TYPE | None:
-        """Get from the redis database, dummy."""
+        """
+        Get from the redis database, dummy.
+
+        :return: Redis value or None
+        """
         return self._data.get(name)
 
     async def set(self, name: str, value: REDIS_VALUE_TYPE, **kwargs) -> None:
-        """Set to the redis database, dummy."""
+        """
+        Set to the redis database, dummy.
+
+        :return:
+        """
         self._data[name] = value
 
     async def delete(self, *names: str) -> None:
-        """Delete from the redis database, dummy."""
+        """
+        Delete from the redis database, dummy.
+
+        :return:
+        """
         for name in names:
             self._data.pop(name)
 
     @classmethod
     async def ping(cls) -> bool:
-        """Ping the redis database, dummy."""
+        """
+        Ping the redis database, dummy.
+
+        :return: whether Redis connection is live.
+        """
         return True
 
     @classmethod
     async def aclose(cls) -> None:
-        """Close the redis database, dummy."""
+        """
+        Close the redis database, dummy.
+
+        :return:
+        """
         pass
 
 
@@ -42,7 +62,7 @@ async def _get_redis_client() -> AsyncGenerator[Redis, None]:
     Get redis client as an iterator.
 
     :raises RedisConnectionError: If redis client is not available
-    :return: redis client
+    :yield: redis client
     """
     try:
         redis_client = Redis(
@@ -58,17 +78,27 @@ async def _get_redis_client() -> AsyncGenerator[Redis, None]:
     response = await redis_client.ping()
     if not response:
         raise RedisConnectionError()
-    try:
+    try:  # noqa: WPS501
         yield redis_client
     finally:
         await redis_client.aclose()
 
 
-async def get_redis_client(redis: Redis = Depends(_get_redis_client)) -> Redis:
-    """Get redis client."""
+async def get_redis_client(
+    redis: Annotated[Redis, Depends(_get_redis_client)],
+) -> Redis:
+    """
+    Get redis client.
+
+    :return: Redis client
+    """
     return redis
 
 
 async def get_fake_redis_client() -> FakeRedis:
-    """Get fake redis client, dummy."""
+    """
+    Get fake redis client, dummy.
+
+    :return: fake Redis client
+    """
     return FakeRedis()

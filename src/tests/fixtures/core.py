@@ -4,7 +4,7 @@ from contextlib import ExitStack
 from typing import AsyncGenerator, Generator
 
 import pytest
-from factories.user import UserInDBFactory
+from factories.token import UserTokenFactory
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from sqlalchemy import URL
@@ -110,6 +110,6 @@ async def http_client(
 async def auth_client(
     fastapi_app: FastAPI,
 ) -> TestClient:
-    user_in_db = UserInDBFactory.build(is_active=True)
-    fastapi_app.dependency_overrides[get_current_user] = lambda: user_in_db
+    user_in_token = UserTokenFactory.build(is_active=True)
+    fastapi_app.dependency_overrides[get_current_user] = lambda: user_in_token
     return TestClient(fastapi_app)

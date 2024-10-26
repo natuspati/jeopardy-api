@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from api.authnetication import create_access_token, verify_password
-from api.schemas.authnetication import TokenDataSchema, TokenSchema
+from api.schemas.authnetication import TokenSchema, UserInTokenSchema
 from api.schemas.nested.user import UserWithLobbiesInDBSchema
 from api.schemas.query import PaginationSchema
 from api.schemas.user import (
@@ -130,7 +130,11 @@ class UserOperationsInterface:
     @classmethod
     def _create_access_token(cls, user: UserInDBSchema) -> TokenSchema:
         access_token_expires = timedelta(minutes=settings.access_token_expire_min)
-        token_data = TokenDataSchema(user_id=user.id, sub=user.username)
+        token_data = UserInTokenSchema(
+            user_id=user.id,
+            sub=user.username,
+            is_active=user.is_active,
+        )
         access_token = create_access_token(
             data=token_data.model_dump(by_alias=True),
             expires_delta=access_token_expires,

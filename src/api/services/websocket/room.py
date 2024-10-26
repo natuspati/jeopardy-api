@@ -2,7 +2,7 @@ from typing import AsyncGenerator, Iterable
 
 from fastapi import WebSocket
 
-from api.schemas.websocket import BaseWebsocketMessageSchema
+from api.messages.base import BaseWebsocketMessage
 from api.services.websocket.connection import Connection
 from exceptions.service.websocket import (
     WebsocketConnectionExistsError,
@@ -15,6 +15,15 @@ class Room:
         self._id = room_id
         self._connections: dict[str, Connection] = {}
 
+    @property
+    def id(self) -> str:
+        """
+        Get room id.
+
+        :return: room id
+        """
+        return self._id
+
     def get_connection(
         self,
         connection_id: str,
@@ -24,7 +33,7 @@ class Room:
         Fetch connection.
 
         :param connection_id: connection id
-        :param raise_error: whether to raise exception if connection does not exist, False by default
+        :param raise_error: whether to error out if connection does not exist
         :return: connection
         """
         connection = self._connections.get(connection_id)
@@ -43,10 +52,10 @@ class Room:
 
         :param connection_id: connection id
         :param websocket: websocket connection
-        :param disconnect_existing: whether to disconnect existing connection, True by default
+        :param disconnect_existing: whether to disconnect existing connection
         :return: created connection
         """
-        if existing_connection := self.get_connection(connection_id):
+        if existing_connection := self.get_connection(connection_id):  # noqa: WPS332
             if disconnect_existing:
                 raise WebsocketConnectionExistsError()
             return existing_connection
@@ -56,7 +65,7 @@ class Room:
 
     async def send(
         self,
-        message: BaseWebsocketMessageSchema,
+        message: BaseWebsocketMessage,
         connection_ids: Iterable[str] | None = None,
     ) -> None:
         """

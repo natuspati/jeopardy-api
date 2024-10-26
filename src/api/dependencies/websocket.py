@@ -2,40 +2,36 @@ from typing import Annotated
 
 from fastapi import Depends, WebSocket
 
-from api.dependencies import get_current_user_from_header
-from api.schemas.user import UserInDBSchema
-from api.services import PlayerService, ws_conn_manager
-from cutom_types.websocket import ROOM_CONNECTION_TYPE
-from exceptions.service.not_found import PlayerNotFoundError
+from api.dependencies import get_current_player
+from api.schemas.player import PlayerInDBSchema
+from api.services import Connection, Room, ws_conn_manager
 
 
-async def get_lobby_room(
-    lobby_id: int,
-    websocket: WebSocket,
-    current_user: Annotated[UserInDBSchema, Depends(get_current_user_from_header)],
-    player_service: Annotated[PlayerService, Depends()],
-) -> ROOM_CONNECTION_TYPE:
+async def get_lobby_room(lobby_id: int) -> Room:
     """
-    Get lobby room and player connection.
-
-    Room and player are fetched from authorization header.
+    Get lobby room.
 
     :param lobby_id: lobby id
-    :param websocket: websocket
-    :param current_user: current user
-    :param player_service: player service
-    :return: room and connection for the player
+    :return: lobby room
     """
-    player = await player_service.get_player_by_user_lobby(
-        user_id=current_user.id,
-        lobby_id=lobby_id,
-    )
-    if not player:
-        raise PlayerNotFoundError()
-    connection = ws_conn_manager.create_connection(
-        room_id=lobby_id,
-        connection_id=player.id,
+    return ws_conn_manager.get_or_create_room(room_id=lobby_id)
+
+
+async def get_lobby_connection(
+    lobby_room: Annotated[Room, Depends(get_lobby_room)],
+    current_player: Annotated[PlayerInDBSchema, Depends(get_current_player)],
+    websocket: WebSocket,
+) -> Connection:
+    """
+    Get lobby connection.
+
+    :param lobby_room: lobby room
+    :param current_player: current player
+    :param websocket: websocket connection
+    :return: connection to a lobby
+    """
+    return ws_conn_manager.create_connection(
+        room_id=lobby_room.id,
+        connection_id=current_player.id,
         websocket=websocket,
     )
-    room = ws_conn_manager.get_room(lobby_id, raise_error=True)
-    return room, connection

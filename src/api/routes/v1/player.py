@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, status
 
 from api.dependencies import check_current_user_in_lobby, get_current_user
 from api.interfaces import LobbyOperationsInterface
+from api.schemas.authnetication import UserInTokenSchema
 from api.schemas.nested.player import PlayerWithLobbyUserShowSchema
 from api.schemas.player import LobbyPlayerAddSchema, PlayerInDBSchema
-from api.schemas.user import UserInDBSchema
 from exceptions.responses import UNAUTHORIZED_RESPONSE, generate_responses
 
 player_router = APIRouter(
@@ -59,7 +59,7 @@ async def get_player(
 async def create_player(
     lobby_id: int,
     lobby_player_add: LobbyPlayerAddSchema,
-    user: Annotated[UserInDBSchema, Depends(get_current_user)],
+    user: Annotated[UserInTokenSchema, Depends(get_current_user)],
     integration_interface: Annotated[LobbyOperationsInterface, Depends()],
 ):
     """
@@ -73,6 +73,6 @@ async def create_player(
     """
     return await integration_interface.create_waiting_player(
         lobby_id=lobby_id,
-        user_id=user.id,
+        user_id=user.user_id,
         lobby_player_add=lobby_player_add,
     )

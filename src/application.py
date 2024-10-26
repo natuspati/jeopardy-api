@@ -35,6 +35,4 @@ def get_app() -> FastAPI:
     app.include_router(router=app_router)
     logger.info("Routing setup")
 
-    app.add_websocket_route()
-
     return app

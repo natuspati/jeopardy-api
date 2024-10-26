@@ -7,10 +7,10 @@ from alembic.operations import Operations
 from alembic.runtime.environment import EnvironmentContext
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
+from factories.user import UserInTokenFactory
 from sqlalchemy import URL, Connection, text
 
 from api.authnetication import create_access_token
-from api.schemas.authnetication import TokenDataSchema
 from cutom_types.base import T  # noqa: WPS347
 from database.base_model import meta
 from database.manager import create_database_connection_manager
@@ -170,8 +170,8 @@ def create_auth_header(user: UserModel) -> dict[str, str]:
     :param user: user in database
     :return: authorization header
     """
-    token_data = TokenDataSchema(user_id=user.id, sub=user.username)
+    user_token = UserInTokenFactory.build(user_id=user.id, sub=user.username)
     access_token = create_access_token(
-        data=token_data.model_dump(by_alias=True),
+        data=user_token.model_dump(by_alias=True),
     )
     return {"Authorization": f"Bearer {access_token}"}
