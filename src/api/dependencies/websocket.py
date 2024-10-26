@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends, WebSocket
 
@@ -21,17 +21,19 @@ async def get_lobby_connection(
     lobby_room: Annotated[Room, Depends(get_lobby_room)],
     current_player: Annotated[PlayerInDBSchema, Depends(get_current_player)],
     websocket: WebSocket,
-) -> Connection:
+) -> AsyncGenerator[Connection, None]:
     """
     Get lobby connection.
 
     :param lobby_room: lobby room
     :param current_player: current player
     :param websocket: websocket connection
-    :return: connection to a lobby
+    :yield: connection to a lobby
     """
-    return ws_conn_manager.create_connection(
+    connection = await ws_conn_manager.create_connection(
         room_id=lobby_room.id,
         connection_id=current_player.id,
         websocket=websocket,
     )
+    async with connection:
+        yield connection

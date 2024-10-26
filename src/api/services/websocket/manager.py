@@ -10,9 +10,9 @@ from exceptions.service.websocket import (
 
 class ConnectionManager:
     def __init__(self):
-        self._rooms: dict[str, Room] = {}
+        self._rooms: dict[str | int, Room] = {}
 
-    def get_room(self, room_id: str, raise_error: bool = False) -> Room | None:
+    def get_room(self, room_id: str | int, raise_error: bool = False) -> Room | None:
         """
         Get room.
 
@@ -25,10 +25,10 @@ class ConnectionManager:
             raise WebsocketRoomNotExistsError()
         return room
 
-    def create_connection(
+    async def create_connection(
         self,
-        room_id: str,
-        connection_id: str,
+        room_id: str | int,
+        connection_id: str | int,
         websocket: WebSocket,
         disconnect_existing: bool = True,
     ) -> Connection:
@@ -44,9 +44,13 @@ class ConnectionManager:
         :return: connection
         """
         room = self.get_or_create_room(room_id)
-        return room.create_connection(connection_id, websocket, disconnect_existing)
+        return await room.create_connection(
+            connection_id,
+            websocket,
+            disconnect_existing,
+        )
 
-    def get_or_create_room(self, room_id: str) -> Room:
+    def get_or_create_room(self, room_id: str | int) -> Room:
         """
         Get or create a room.
 
@@ -58,7 +62,7 @@ class ConnectionManager:
             return self._create_room(room_id)
         return existing_room
 
-    def _create_room(self, room_id: str) -> Room:
+    def _create_room(self, room_id: str | int) -> Room:
         if self.get_room(room_id):
             raise WebsocketRoomExistsError()
         new_room = Room(room_id)

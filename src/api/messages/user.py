@@ -1,5 +1,3 @@
-from typing import Literal
-
 from api.enums.websocket import WebsocketMessageTypeEnum
 from api.messages.base import BaseWebsocketMessage
 from api.schemas.websocket import UserWebsocketMessageSchema
@@ -14,7 +12,7 @@ class UserMessage(BaseWebsocketMessage):
         self,
         message: str,
         sender: str | int,
-        receivers: Literal["all"] | list[str] = "all",
+        receivers: list[str | int] | None = None,
         message_type: str | None = None,
     ):
         if message_type:
@@ -28,3 +26,11 @@ class UserMessage(BaseWebsocketMessage):
         self.sender = sender
         self.receivers = receivers
         super().__init__(sender=sender, receivers=receivers)
+
+    def to_dict(self) -> dict:
+        """
+        Convert user message to serializable dictionary without receivers field.
+
+        :return: user message
+        """
+        return super().to_dict(exclude={"receivers"})

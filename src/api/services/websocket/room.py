@@ -41,9 +41,9 @@ class Room:
             raise WebsocketConnectionNotExistsError()
         return connection
 
-    def create_connection(
+    async def create_connection(
         self,
-        connection_id: str,
+        connection_id: str | int,
         websocket: WebSocket,
         disconnect_existing: bool = True,
     ) -> Connection:
@@ -55,10 +55,17 @@ class Room:
         :param disconnect_existing: whether to disconnect existing connection
         :return: created connection
         """
-        if existing_connection := self.get_connection(connection_id):  # noqa: WPS332
+        existing_connection = self.get_connection(connection_id)
+        if existing_connection:
+            conn_exists_error = WebsocketConnectionExistsError()
             if disconnect_existing:
-                raise WebsocketConnectionExistsError()
-            return existing_connection
+                await self._remove_connection(
+                    connection=existing_connection,
+                    code=conn_exists_error.ws_status_code,
+                    reason=conn_exists_error.detail,
+                )
+            else:
+                raise conn_exists_error
         new_connection = Connection(connection_id, websocket)
         self._connections[connection_id] = new_connection
         return new_connection
@@ -66,7 +73,7 @@ class Room:
     async def send(
         self,
         message: BaseWebsocketMessage,
-        connection_ids: Iterable[str] | None = None,
+        connection_ids: Iterable[str | int] | None = None,
     ) -> None:
         """
         Send message to connections.
@@ -99,3 +106,12 @@ class Room:
         async with connection:
             async for message in connection:
                 yield message
+
+    async def _remove_connection(
+        self,
+        connection: Connection,
+        code: int,
+        reason: str | None = None,
+    ) -> None:
+        await connection.disconnect(code=code, reason=reason)
+        self._connections.pop(connection.id)

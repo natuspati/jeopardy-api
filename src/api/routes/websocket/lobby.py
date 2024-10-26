@@ -24,7 +24,7 @@ async def join_lobby(
     :param connection: lobby connection
     :return:
     """
-    async with connection:
-        await connection.send(LobbyConnectMessage(player_id=current_player.id))
-        async for message in connection:
-            await room.send(UserMessage(sender=current_player.id, **message))
+    await room.send(LobbyConnectMessage(player_id=current_player.id))
+    async for message in connection:
+        user_message = UserMessage(sender=current_player.id, **message)
+        await room.send(user_message, connection_ids=user_message.receivers)

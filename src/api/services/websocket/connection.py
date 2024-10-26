@@ -1,7 +1,7 @@
 from types import TracebackType
 from typing import AsyncGenerator
 
-from fastapi import WebSocket
+from fastapi import WebSocket, status
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
 from api.messages.base import BaseWebsocketMessage
@@ -22,6 +22,15 @@ class Connection:
         :return: connection id
         """
         return self._id
+
+    @property
+    def client_state(self) -> WebSocketState:
+        """
+        Get client connection state.
+
+        :return: connection state
+        """
+        return self._websocket.client_state
 
     async def __aenter__(self):
         """
@@ -46,13 +55,9 @@ class Connection:
         :param tb: traceback if present
         :return:
         """
-        if isinstance(exc, BaseServiceError):
-            code = exc.ws_status_code
-            reason = exc.detail
-        else:
-            code = BaseServiceError.ws_status_code
-            reason = BaseServiceError.detail
-        await self._websocket.close(code=code, reason=reason)
+        code = getattr(exc, "ws_status_code", BaseServiceError.ws_status_code)
+        reason = getattr(exc, "detail", BaseServiceError.detail)
+        await self.disconnect(code=code, reason=reason)
 
     async def __aiter__(self) -> AsyncGenerator[dict, None]:
         """
@@ -66,6 +71,22 @@ class Connection:
                 yield await self._websocket.receive_json()
             except WebSocketDisconnect:
                 break
+
+    async def disconnect(
+        self,
+        code: int = status.WS_1001_GOING_AWAY,
+        reason: str | None = None,
+    ) -> None:
+        """
+        Disconnect from websocket.
+
+        :return:
+        """
+        if not self._check_client_state(WebSocketState.DISCONNECTED, raise_error=False):
+            await self._websocket.close(
+                code=code,
+                reason=reason,
+            )
 
     async def send(self, message: BaseWebsocketMessage) -> None:
         """
@@ -82,7 +103,7 @@ class Connection:
         state: WebSocketState = WebSocketState.CONNECTED,
         raise_error: bool = True,
     ) -> bool:
-        if self._websocket.client_state == state:
+        if self.client_state == state:
             return True
         if raise_error:
             raise WebsocketInvalidStateError()

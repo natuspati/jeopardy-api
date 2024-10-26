@@ -16,10 +16,11 @@ class BaseWebsocketMessage(ABC):
             **kwargs,
         )
 
-    def to_dict(self):
+    def to_dict(self, exclude: set[str] | None = None):
         """
         Convert message to serializable dictionary.
 
+        :param exclude: fields to exclude
         :return: serializable message
         """
-        return self._schema.model_dump(mode="json")
+        return self._schema.model_dump(mode="json", exclude=exclude)
