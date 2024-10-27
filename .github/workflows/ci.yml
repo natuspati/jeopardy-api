@@ -21,11 +21,11 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: ${{ env.JEOPARDY_DB_NAME }}
-          POSTGRES_USER: ${{ env.JEOPARDY_DB_USER }}
-          POSTGRES_PASSWORD: ${{ env.JEOPARDY_DB_PASSWORD }}
+          POSTGRES_DB: $JEOPARDY_DB_NAME
+          POSTGRES_USER: $JEOPARDY_DB_USER
+          POSTGRES_PASSWORD: $JEOPARDY_DB_PASSWORD
         options: >-
-          --health-cmd "pg_isready -U ${{ env.JEOPARDY_DB_USER }}"
+          --health-cmd "pg_isready -U $JEOPARDY_DB_USER"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
