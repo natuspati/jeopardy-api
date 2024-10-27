@@ -1,5 +1,5 @@
 from factories.test import TestSchemaFactory
-from fixtures.schemas import TestPaginatedResultSchema
+from fixtures.schemas import MockPaginatedResultSchema
 
 from api.schemas.query import PaginationSchema
 from api.services.pagination import PaginationService
@@ -20,7 +20,7 @@ async def test_paginate(
     paginated_result = pagination_service.paginate(
         total=batch_size,
         items=selected_schemas,
-        result_schema=TestPaginatedResultSchema,
+        result_schema=MockPaginatedResultSchema,
     )
     assert paginated_result.page == page
     assert paginated_result.page_size == page_size

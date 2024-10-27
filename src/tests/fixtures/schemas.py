@@ -7,13 +7,13 @@ from api.schemas.pagination import PaginatedResultsSchema
 from api.schemas.query import DateTimeSchema, OrderSchema, PaginationSchema
 
 
-class TestSchema(BaseSchema):
+class MockSchema(BaseSchema):
     id: int
     name: str
 
 
-class TestPaginatedResultSchema(PaginatedResultsSchema):
-    items: list[TestSchema]
+class MockPaginatedResultSchema(PaginatedResultsSchema):
+    items: list[MockSchema]
 
 
 @pytest.fixture(scope="session")
