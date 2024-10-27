@@ -1,6 +1,6 @@
 import pytest
 from factories.lobby import LobbyPlayerAddFactory
-from fastapi import status
+from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from utilities import choose_from_list, create_auth_header
@@ -17,6 +17,7 @@ async def test_get_player(
     players: list[list[PlayerModel]],
     db_session: AsyncSession,
     http_client: TestClient,
+    fastapi_app: FastAPI,
 ):
     await db_session.commit()
     players_in_lobby = choose_from_list(players)
@@ -31,10 +32,12 @@ async def test_get_player(
     assert response.status_code == status.HTTP_200_OK
 
     fetched_player = response.json()
+    join_link = fetched_player.pop("join_url")
     player_as_dict = player.to_dict(include_related=True, to_string=True)
     player_as_dict["user"].pop("password")
     player_as_dict["user"].pop("is_active")
     assert fetched_player == player_as_dict
+    assert join_link == fastapi_app.url_path_for("join_lobby", lobby_id=player.lobby_id)
 
 
 @pytest.mark.usefixtures("_reset_database")

@@ -36,6 +36,10 @@ class OneFieldSetSchemaMixin:
         return values
 
 
+class JoinLinkSchemaMixin:
+    join_url: str
+
+
 class BaseDBSchema(BaseSchema, FromAttributesMixin, IDSchemaMixin):
     pass
 

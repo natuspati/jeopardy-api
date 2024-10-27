@@ -4,7 +4,7 @@ from fastapi import Depends
 from pydantic import ValidationError
 
 from api.enums import PlayerStateEnum
-from api.schemas.nested.player import PlayerWithLobbyUserInDBSchema
+from api.schemas.nested.player import PlayerWithLobbyUserSchema
 from api.schemas.player import PlayerCreateSchema, PlayerInDBSchema
 from api.services.mixins import DBModelValidatorMixin
 from cutom_types.player import UPDATE_PLAYER_STATE_TYPE
@@ -23,7 +23,7 @@ class PlayerService(DBModelValidatorMixin):
     async def get_player_by_id(
         self,
         player_id: int,
-    ) -> PlayerWithLobbyUserInDBSchema | None:
+    ) -> PlayerWithLobbyUserSchema | None:
         """
         Get player by id with associated lobbies.
 
@@ -31,7 +31,7 @@ class PlayerService(DBModelValidatorMixin):
         :return: player with associated lobbies
         """
         player_in_db = await self._player_dal.get_player_by_id(player_id)
-        return self.validate(player_in_db, PlayerWithLobbyUserInDBSchema)
+        return self.validate(player_in_db, PlayerWithLobbyUserSchema)
 
     async def get_player_by_user_lobby(
         self,

@@ -1,5 +1,6 @@
 import pytest
 from factories.lobby import LobbyPlayerAddFactory, LobbyPlayerCreateFactory
+from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 from utilities import choose_from_list
 
@@ -45,22 +46,31 @@ async def test_get_lobby(
     lobbies: list[LobbyModel],
     players: list[list[PlayerModel]],
     lobby_operations: LobbyOperationsInterface,
+    fastapi_app: FastAPI,
 ):
     players_in_lobby = choose_from_list(players)
     player_in_lobby = choose_from_list(players_in_lobby)
     selected_lobby = lobbies[player_in_lobby.lobby_id - 1]
     fetched_lobby = await lobby_operations.get_lobby(selected_lobby.id)
 
-    assert fetched_lobby.model_dump(exclude={"players"}) == selected_lobby.to_dict()
+    assert (
+        fetched_lobby.model_dump(exclude={"players", "join_url"})
+        == selected_lobby.to_dict()
+    )
     assert len(fetched_lobby.players) == len(players_in_lobby)
     players_as_dict = [player.to_dict() for player in players_in_lobby]
     for player in fetched_lobby.players:
         assert player.model_dump() in players_as_dict
+    assert fetched_lobby.join_url == fastapi_app.url_path_for(
+        "join_lobby",
+        lobby_id=selected_lobby.id,
+    )
 
 
 async def test_get_player(
     players: list[list[PlayerModel]],
     lobby_operations: LobbyOperationsInterface,
+    fastapi_app: FastAPI,
 ):
     players_in_lobby = choose_from_list(players)
     player_in_lobby = choose_from_list(players_in_lobby)
@@ -68,7 +78,13 @@ async def test_get_player(
         lobby_id=player_in_lobby.lobby_id,
         player_id=player_in_lobby.id,
     )
-    assert fetched_player.model_dump() == player_in_lobby.to_dict(include_related=True)
+    fetched_player_as_dict = fetched_player.model_dump()
+    join_link = fetched_player_as_dict.pop("join_url")
+    assert fetched_player_as_dict == player_in_lobby.to_dict(include_related=True)
+    assert join_link == fastapi_app.url_path_for(
+        "join_lobby",
+        lobby_id=player_in_lobby.lobby_id,
+    )
 
 
 async def test_get_player_with_wrong_lobby_fails(
@@ -123,6 +139,7 @@ async def test_ban_player(
 async def test_create_lobby(
     active_user: UserModel,
     lobby_operations: LobbyOperationsInterface,
+    fastapi_app: FastAPI,
 ):
     lobby_create = LobbyPlayerCreateFactory.build()
     lobby = await lobby_operations.create_lobby(
@@ -130,6 +147,7 @@ async def test_create_lobby(
         lobby_player_create=lobby_create,
     )
     assert lobby.name == lobby_create.lobby_name
+    assert lobby.join_url == fastapi_app.url_path_for("join_lobby", lobby_id=lobby.id)
     assert len(lobby.players) == 1
     created_player = lobby.players[0]
     assert created_player.name == lobby_create.player_name
@@ -141,6 +159,7 @@ async def test_create_waiting_player(
     active_user: UserModel,
     lobbies: list[LobbyModel],
     lobby_operations: LobbyOperationsInterface,
+    fastapi_app: FastAPI,
 ):
     lobby = choose_from_list(lobbies)
     player_add = LobbyPlayerAddFactory.build()
@@ -153,6 +172,10 @@ async def test_create_waiting_player(
     assert created_player.state == PlayerStateEnum.waiting
     assert created_player.lobby_id == lobby.id
     assert created_player.user_id == active_user.id
+    assert created_player.join_url == fastapi_app.url_path_for(
+        "join_lobby",
+        lobby_id=lobby.id,
+    )
 
 
 async def test_create_waiting_player_fails_if_banned_or_existing(

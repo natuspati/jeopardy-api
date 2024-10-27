@@ -44,9 +44,14 @@ async def test_get_lobby(
 
     fetched_lobby = response.json()
     fetched_players = fetched_lobby.pop("players")
+    fetched_join_link = fetched_lobby.pop("join_url")
     players_as_dict = [player.to_dict(to_string=True) for player in players_in_lobby]
     assert fetched_lobby == lobby.to_dict(to_string=True)
     assert fetched_players == players_as_dict
+    assert fetched_join_link == http_client.app.url_path_for(
+        "join_lobby",
+        lobby_id=player.lobby_id,
+    )
 
 
 @pytest.mark.usefixtures("_reset_database")

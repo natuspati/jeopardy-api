@@ -1,7 +1,7 @@
 import pytest
 from fastapi import Request
 
-from api.services import LobbyService, PlayerService, UserService
+from api.services import LobbyService, PlayerService, RouteService, UserService
 from api.services.pagination import PaginationService
 from database.dals import LobbyDAL, PlayerDAL, UserDAL
 
@@ -24,3 +24,8 @@ async def player_service(player_dal: PlayerDAL) -> PlayerService:
 @pytest.fixture
 async def pagination_service(no_auth_request: Request) -> PaginationService:
     return PaginationService(request=no_auth_request)
+
+
+@pytest.fixture
+async def route_service(no_auth_request: Request) -> RouteService:
+    return RouteService(request=no_auth_request)

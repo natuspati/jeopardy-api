@@ -13,7 +13,7 @@ from api.interfaces import LobbyOperationsInterface
 from api.routes.v1.player import player_router
 from api.schemas.authnetication import UserInTokenSchema
 from api.schemas.lobby import LobbyPlayerCreateSchema, PaginatedLobbiesSchema
-from api.schemas.nested.player import LobbyWithPlayersScowSchema
+from api.schemas.nested.player import LobbyWithLinkShowSchema
 from api.schemas.query import DateTimeSchema, OrderSchema, PaginationSchema
 from exceptions.responses import UNAUTHORIZED_RESPONSE, generate_responses
 
@@ -51,7 +51,7 @@ async def get_lobbies(
 
 @lobby_router.get(
     "/{lobby_id}",
-    response_model=LobbyWithPlayersScowSchema,
+    response_model=LobbyWithLinkShowSchema,
     responses=generate_responses(
         UNAUTHORIZED_RESPONSE,
         (status.HTTP_403_FORBIDDEN, "Request user not in the lobby"),
@@ -76,7 +76,7 @@ async def get_lobby(
 @lobby_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
-    response_model=LobbyWithPlayersScowSchema,
+    response_model=LobbyWithLinkShowSchema,
     responses=generate_responses(
         UNAUTHORIZED_RESPONSE,
         (status.HTTP_422_UNPROCESSABLE_ENTITY, "Lobby data invalid"),

@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, status
 from api.dependencies import check_current_user_in_lobby, get_current_user
 from api.interfaces import LobbyOperationsInterface
 from api.schemas.authnetication import UserInTokenSchema
-from api.schemas.nested.player import PlayerWithLobbyUserShowSchema
-from api.schemas.player import LobbyPlayerAddSchema, PlayerInDBSchema
+from api.schemas.nested.player import PlayerWithLinkShowSchema
+from api.schemas.player import LobbyPlayerAddSchema
 from exceptions.responses import UNAUTHORIZED_RESPONSE, generate_responses
 
 player_router = APIRouter(
@@ -17,7 +17,7 @@ player_router = APIRouter(
 
 @player_router.get(
     "/{player_id}/",
-    response_model=PlayerWithLobbyUserShowSchema,
+    response_model=PlayerWithLinkShowSchema,
     responses=generate_responses(
         (status.HTTP_400_BAD_REQUEST, "Player in not in the lobby"),
         UNAUTHORIZED_RESPONSE,
@@ -48,7 +48,7 @@ async def get_player(
 @player_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
-    response_model=PlayerInDBSchema,
+    response_model=PlayerWithLinkShowSchema,
     responses=generate_responses(
         UNAUTHORIZED_RESPONSE,
         (status.HTTP_403_FORBIDDEN, "User is banned in the lobby"),

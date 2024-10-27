@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from api.enums.query import OrderQueryEnum
 from api.schemas.lobby import LobbyCreateSchema, LobbyInDBSchema
-from api.schemas.nested.player import LobbyWithPlayersInDBSchema
+from api.schemas.nested.player import LobbyWithPlayersSchema
 from api.services.mixins import DBModelValidatorMixin
 from database.dals.relational_dals.lobby import LobbyDAL
 from exceptions.service.schema import SchemaValidationError
@@ -46,7 +46,7 @@ class LobbyService(DBModelValidatorMixin):
         )
         return self.validate(lobbies_in_db, LobbyInDBSchema)
 
-    async def get_lobby_by_id(self, lobby_id: int) -> LobbyWithPlayersInDBSchema | None:
+    async def get_lobby_by_id(self, lobby_id: int) -> LobbyWithPlayersSchema | None:
         """
         Get lobby by id.
 
@@ -54,7 +54,7 @@ class LobbyService(DBModelValidatorMixin):
         :return: lobby with associated players
         """
         lobby_in_db = await self._lobby_dal.get_lobby_by_id(lobby_id=lobby_id)
-        return self.validate(lobby_in_db, LobbyWithPlayersInDBSchema)
+        return self.validate(lobby_in_db, LobbyWithPlayersSchema)
 
     async def create_lobby(self, name: str) -> LobbyInDBSchema:
         """
