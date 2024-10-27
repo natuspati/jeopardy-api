@@ -16,6 +16,7 @@ jobs:
       JEOPARDY_DB_NAME: ${{ secrets.JEOPARDY_DB_NAME }}
       JEOPARDY_DB_USER: ${{ secrets.JEOPARDY_DB_USER }}
       JEOPARDY_DB_PASSWORD: ${{ secrets.JEOPARDY_DB_PASSWORD }}
+      TEST_ENV_VAR: im a test
 
 #    services:
 #      postgres:
@@ -34,13 +35,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Check env variables
-        run: echo "db name $JEOPARDY_DB_NAME db user $JEOPARDY_DB_USER"
+        run: echo "db name $JEOPARDY_DB_NAME \n test env var $TEST_ENV_VAR"
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
