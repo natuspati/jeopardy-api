@@ -63,4 +63,5 @@ jobs:
           JEOPARDY_DB_USER: ${{ secrets.JEOPARDY_DB_USER }}
           JEOPARDY_DB_PASSWORD: ${{ secrets.JEOPARDY_DB_PASSWORD }}
         run: |
-          pytest
+          cd src
+          PYTHONPATH=. pytest
