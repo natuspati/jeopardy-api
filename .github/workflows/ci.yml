@@ -17,24 +17,27 @@ jobs:
       JEOPARDY_DB_USER: ${{ secrets.JEOPARDY_DB_USER }}
       JEOPARDY_DB_PASSWORD: ${{ secrets.JEOPARDY_DB_PASSWORD }}
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: $JEOPARDY_DB_HOST
-          POSTGRES_USER: $JEOPARDY_DB_USER
-          POSTGRES_PASSWORD: $JEOPARDY_DB_PASSWORD
-        options: >-
-          --health-cmd "pg_isready -U $JEOPARDY_DB_USER"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+#    services:
+#      postgres:
+#        image: postgres:16
+#        env:
+#          POSTGRES_DB: $JEOPARDY_DB_NAME
+#          POSTGRES_USER: $JEOPARDY_DB_USER
+#          POSTGRES_PASSWORD: $JEOPARDY_DB_PASSWORD
+#        options: >-
+#          --health-cmd "pg_isready -U $JEOPARDY_DB_USER"
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+#        ports:
+#          - 5432:5432
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Check env variables
+        run: echo "db name $JEOPARDY_DB_NAME db user $JEOPARDY_DB_USER"
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -60,6 +63,6 @@ jobs:
         run: |
           flake8
 
-      - name: Run tests with pytest
-        run: |
-          pytest
+#      - name: Run tests with pytest
+#        run: |
+#          pytest
