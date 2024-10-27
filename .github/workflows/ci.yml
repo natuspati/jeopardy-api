@@ -5,6 +5,8 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   test:
@@ -21,16 +23,16 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: ${{ JEOPARDY_DB_HOST }}
-          POSTGRES_USER: ${{ JEOPARDY_DB_USER }}
-          POSTGRES_PASSWORD: ${{ JEOPARDY_DB_PASSWORD }}
+          POSTGRES_DB: $JEOPARDY_DB_HOST
+          POSTGRES_USER: $JEOPARDY_DB_USER
+          POSTGRES_PASSWORD: $JEOPARDY_DB_PASSWORD
         options: >-
-          --health-cmd "pg_isready -U ${{ JEOPARDY_DB_USER }}"
+          --health-cmd "pg_isready -U $JEOPARDY_DB_USER"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
-          - ${{ JEOPARDY_DB_PORT }}:5432
+          - $JEOPARDY_DB_PORT:5432
 
     steps:
       - name: Checkout code
