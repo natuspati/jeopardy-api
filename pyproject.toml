@@ -43,8 +43,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest_env]
 JEOPARDY_ENVIRONMENT = "test"
-JEOPARDY_DB_HOST = "localhost"
-JEOPARDY_DB_PORT = "5432"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
