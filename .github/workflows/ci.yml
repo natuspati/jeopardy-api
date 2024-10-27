@@ -12,33 +12,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      JEOPARDY_DB_NAME: ${{ secrets.JEOPARDY_DB_NAME }}
-      JEOPARDY_DB_USER: ${{ secrets.JEOPARDY_DB_USER }}
-      JEOPARDY_DB_PASSWORD: ${{ secrets.JEOPARDY_DB_PASSWORD }}
-      TEST_ENV_VAR: im a test
-
-#    services:
-#      postgres:
-#        image: postgres:16
-#        env:
-#          POSTGRES_DB: $JEOPARDY_DB_NAME
-#          POSTGRES_USER: $JEOPARDY_DB_USER
-#          POSTGRES_PASSWORD: $JEOPARDY_DB_PASSWORD
-#        options: >-
-#          --health-cmd "pg_isready -U $JEOPARDY_DB_USER"
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 5
-#        ports:
-#          - 5432:5432
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ${{ secrets.JEOPARDY_DB_NAME }}
+          POSTGRES_USER: ${{ secrets.JEOPARDY_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.JEOPARDY_DB_PASSWORD }}
+        options: >-
+          --health-cmd "pg_isready -U $POSTGRES_USER"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Check env variables
-        run: echo "db name $JEOPARDY_DB_NAME \n test env var $TEST_ENV_VAR"
 
       - name: Set up Python
         uses: actions/setup-python@v5
